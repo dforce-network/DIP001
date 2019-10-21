@@ -1,4 +1,6 @@
-pragma solidity ^0.5.0;
+pragma solidity ^0.5.2;
+
+import './DSAuth.sol';
 
 interface IERC20 {
     function balanceOf(address _owner) external view returns (uint);
@@ -15,7 +17,18 @@ interface IDeFi {
 	function getBalance(address _owner) external view returns (uint256);
 }
 
-contract TargetHandler {
+library DSMath {
+    function add(uint x, uint y) internal pure returns (uint z) {
+        require((z = x + y) >= x, "ds-math-add-overflow");
+    }
+    function sub(uint x, uint y) internal pure returns (uint z) {
+        require((z = x - y) <= x, "ds-math-sub-underflow");
+    }
+}
+
+contract TargetHandler is DSAuth{
+	using DSMath for uint256;
+
 	address public targetAddr;
 	address public token;
 	uint256 public principle;
@@ -29,20 +42,29 @@ contract TargetHandler {
 	// trigger token deposit
 	function trigger() external {
 		uint256 amount = IERC20(token).balanceOf(address(this));
-		principle += amount;
+		principle = principle.add(amount);
 		IDeFi(targetAddr).deposit(amount);
 	}
 
 	// withdraw the token back to this contract
-	function withdraw(uint256 _amounts) external {
-		principle -= _amounts;
-		IDeFi(targetAddr).withdraw(_amounts);
+	// TODO: check sender, must be dispatcher!!
+	function withdraw(uint256 _amounts) external auth {
+		//require(msg.sender == owner, "sender must be owner");
+		// check the fund in the reserve (contract balance) is enough or not
+		// if not enough, drain from the defi
+		uint256 _tokenBalance = IERC20(token).balanceOf(address(this));
+		if (_tokenBalance < _amounts) {
+			IDeFi(targetAddr).withdraw(_amounts - _tokenBalance);
+		}
+
+		principle = principle.sub(_amounts);
+		require(IERC20(token).transfer(msg.sender, _amounts));
 	}
 
 	function withdrawProfit(address _beneficiary) external {
-		uint256 amount = getProfit();
-		IDeFi(targetAddr).withdraw(amount);
-		require(IERC20(token).transfer(_beneficiary, amount));
+		uint256 _amount = getProfit();
+		IDeFi(targetAddr).withdraw(_amount);
+		require(IERC20(token).transfer(_beneficiary, _amount));
 	}
 
 	function getBalance() public view returns (uint256) {
@@ -54,6 +76,6 @@ contract TargetHandler {
 	}
 
 	function getProfit() public view returns (uint256) {
-		return getBalance() - getPrinciple();
+		return getBalance().sub(getPrinciple());
 	}
 }

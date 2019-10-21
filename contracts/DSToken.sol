@@ -188,6 +188,10 @@ contract DSToken is DSTokenBase(0), DSStop {
     bytes32  public  symbol;
     uint256  public  decimals = 18;
 
+    function getDecimals() external view returns (uint256) {
+        return decimals;
+    }
+
     constructor(bytes32 symbol_) public {
         symbol = symbol_;
     }

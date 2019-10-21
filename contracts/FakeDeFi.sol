@@ -9,7 +9,7 @@ interface IERC20 {
     function totalSupply() external view returns (uint);
 }
 
-contract DeFi {
+contract FakeDeFi {
 	address public token;
 	mapping(address => uint256) public balances;
 
@@ -19,14 +19,20 @@ contract DeFi {
 
 	function deposit(uint256 _amounts) external {
 		require(IERC20(token).transferFrom(msg.sender, address(this), _amounts));
+		balances[msg.sender] += _amounts;
 	}
 
 	function withdraw(uint256 _amounts) external {
-		require(getBalance(msg.sender) >= _amounts);
-		require(IERC20(token).transfer(msg.sender, _amounts));
+		require(balances[msg.sender] >= _amounts, "user have no enough token");
+		balances[msg.sender] -= _amounts;
+		require(IERC20(token).transfer(msg.sender, _amounts), "contrract balance not enough");
+	}
+
+	function makeProfitToUser(address _user) external {
+		balances[_user] = balances[_user] * 110 / 100; 
 	}
 
 	function getBalance(address _owner) public view returns (uint256) {
-		return IERC20(token).balanceOf(address(this));
+		return balances[_owner];
 	}
 }
