@@ -161,6 +161,7 @@ contract('test', function(accounts) {
 		console.log("infornation after deposit 10 tokens")
 		tx = await token.transfer(dispatcher.address, await ether("10"), {from: user2})
 		tx = await dispatcher.trigger()
+		console.log(tx.receipt.gasUSed)
 		await showResult()
 
 		console.log("-------------------------------------------")
@@ -176,6 +177,7 @@ contract('test', function(accounts) {
 		console.log("deposit 10 more tokens")
 		tx = await token.transfer(dispatcher.address, await ether("10"), {from: user2})
 		tx = await dispatcher.trigger()
+		console.log(tx.receipt.gasUSed)
 		await showResult()
 
 		// defi_2 get a lots profit until the reserve rate is too low
@@ -192,6 +194,7 @@ contract('test', function(accounts) {
 		console.log("-------------------------------------------")
 		console.log("trigger again, should withdraw some principle")
 		tx = await dispatcher.trigger()
+		console.log(tx.receipt.gasUSed)
 		await showResult()
 
 		console.log("-------------------------------------------")
@@ -210,12 +213,14 @@ contract('test', function(accounts) {
 		console.log("deposit 10 more tokens")
 		tx = await token.transfer(dispatcher.address, await ether("10"), {from: user2})
 		tx = await dispatcher.trigger()
+		console.log(tx.receipt.gasUSed)
 		await showResult()
 
 		console.log("-------------------------------------------")
 		console.log("deposit 50 more tokens")
 		tx = await token.transfer(dispatcher.address, await ether("50"), {from: user2})
 		tx = await dispatcher.trigger()
+		console.log(tx.receipt.gasUSed)
 		await showResult()
 
 		console.log("-------------------------------------------")
@@ -235,6 +240,7 @@ contract('test', function(accounts) {
 		console.log("-------------------------------------------")
 		console.log("trigger again")
 		tx = await dispatcher.trigger()
+		console.log(tx.receipt.gasUSed)
 		await showResult()
 	});
 });

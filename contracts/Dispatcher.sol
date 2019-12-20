@@ -1,23 +1,11 @@
-pragma solidity ^0.5.2;
+pragma solidity ^0.5.4;
 
-import './DSAuth.sol';
+import './DSLibrary/DSAuth.sol';
+import './interface/ITargetHandler.sol';
+import './interface/IERC20.sol';
 
-interface ITargetHandler {
-	function trigger() external; // trigger token deposit 
-	function withdraw(uint256 _amounts) external;
-	function withdrawProfit(address _beneficiary) external;
-	function getBalance() view external returns (uint256);
-	function getPrinciple() view external returns (uint256);
-	function getProfit() view external returns (uint256);
-}
-
-interface IERC20 {
-    function balanceOf(address _owner) external view returns (uint);
-    function allowance(address _owner, address _spender) external view returns (uint);
-    function transfer(address _to, uint _value) external returns (bool success);
-    function transferFrom(address _from, address _to, uint _value) external returns (bool success);
-    function approve(address _spender, uint _value) external returns (bool success);
-    function totalSupply() external view returns (uint);
+interface IFund {
+	function transferOut(address _tokenID, address _to, uint amount) external returns (bool);
 }
 
 interface DFToken {
@@ -41,31 +29,23 @@ contract Dispatcher is DSAuth {
 
 	address public token;
 	address public profitBeneficiary;
+	address public fundPool;
 	TargetHandler[] public ths;
 	uint256 public reserveUpperLimit;
 	uint256 public reserveLowerLimit;
 	uint256 public executeUnit;
 
-	event Log(uint256 _number);
-
 	struct TargetHandler {
-		address targetHandlerAddr;
-		uint256 aimedPropotion;
-	}
-
-	struct TargetHandlerDetail {
 		address targetHandlerAddr;
 		address targetAddr;
 		uint256 aimedPropotion;
-		uint256 balance;
-		uint256 principle;
-		uint256 profit;
 	}
 
-	constructor (address _tokenAddr, address[] memory _thAddr, uint256[] memory _thPropotion) public {
+	constructor (address _tokenAddr, address _fundPool, address[] memory _thAddr, uint256[] memory _thPropotion) public {
 		owner = msg.sender;
 		token = _tokenAddr;
-		require(_thAddr.length == _thPropotion.length);
+		fundPool = _fundPool;
+		require(_thAddr.length == _thPropotion.length, "wrong length");
 		uint256 sum = 0;
 		uint256 i;
 		for(i = 0; i < _thAddr.length; ++i) {
@@ -73,9 +53,9 @@ contract Dispatcher is DSAuth {
 		}
 		require(sum == 1000, "the sum of propotion must be 1000");
 		for(i = 0; i < _thAddr.length; ++i) {
-			ths.push(TargetHandler(_thAddr[i], _thPropotion[i]));
+			ths.push(TargetHandler(_thAddr[i], ITargetHandler(_thAddr[i]).getTargetAddress(), _thPropotion[i]));
 		}
-		executeUnit = (10 ** DFToken(token).getDecimals()) / 10; //0.1
+		executeUnit = (10 ** 18) / 10; //0.1
 
 		// set up the default limit 
 		reserveUpperLimit = 350; // 350 / 1000 = 0.35
@@ -107,13 +87,13 @@ contract Dispatcher is DSAuth {
 		uint256 amountsToTH;
 		uint256 thCurrentBalance;
 		uint256 amountsToSatisfiedAimedPropotion;
-		uint256 totalBalanceAfterDeposit = getBalance().add(_amounts).sub(getReserve());
+		uint256 totalPrincipleAfterDeposit = getPrinciple().add(_amounts);
 		TargetHandler memory _th;
 		for(i = 0; i < ths.length; ++i) {
 			_th = ths[i];
 			amountsToTH = 0;
-			thCurrentBalance = getTHBalance(i);
-			amountsToSatisfiedAimedPropotion = totalBalanceAfterDeposit.mul(_th.aimedPropotion) / 1000;
+			thCurrentBalance = getTHPrinciple(i);
+			amountsToSatisfiedAimedPropotion = totalPrincipleAfterDeposit.mul(_th.aimedPropotion) / 1000;
 			if (thCurrentBalance > amountsToSatisfiedAimedPropotion) {
 				continue;
 			} else {
@@ -124,7 +104,7 @@ contract Dispatcher is DSAuth {
 				} else {
 					_amounts -= amountsToTH;
 				}
-				require(IERC20(token).transfer(_th.targetHandlerAddr, amountsToTH));
+				require(IFund(fundPool).transferOut(token, _th.targetHandlerAddr, amountsToTH));
 				ITargetHandler(_th.targetHandlerAddr).trigger();
 			}
 		}	
@@ -135,7 +115,7 @@ contract Dispatcher is DSAuth {
 		uint256 amountsFromTH;
 		uint256 thCurrentBalance;
 		uint256 amountsToSatisfiedAimedPropotion;
-		uint256 totalBalanceAfterWithdraw = getBalance().sub(_amounts).sub(getReserve());
+		uint256 totalBalanceAfterWithdraw = getPrinciple().sub(_amounts);
 		TargetHandler memory _th;
 		for(i = 0; i < ths.length; ++i) {
 			_th = ths[i];
@@ -168,15 +148,16 @@ contract Dispatcher is DSAuth {
 
 	// getter function 
 	function getReserve() view public returns (uint256) {
-		return IERC20(token).balanceOf(address(this));
+		return IERC20(token).balanceOf(fundPool);
 	}
 
 	function getReserveRatio() view public returns (uint256) {
-		uint256 balance = getBalance();
-		if (balance == 0) {
+		uint256 fraction = getReserve();
+		uint256 denominator = getPrinciple().add(fraction);
+		if (denominator == 0) {
 			return 0;
 		} else {
-			return getReserve() * 1000 / balance;
+			return fraction * 1000 / denominator;
 		}
 	}
 
@@ -186,8 +167,7 @@ contract Dispatcher is DSAuth {
 		for(uint256 i = 0; i < ths.length; ++i) {
 			_th = ths[i];
 			result = result.add(getTHPrinciple(i));
-		}
-		result = result.add(IERC20(token).balanceOf(address(this)));	
+		}	
 	}
 
 	function getBalance() view public returns (uint256 result) {
@@ -197,7 +177,6 @@ contract Dispatcher is DSAuth {
 			_th = ths[i];
 			result = result.add(getTHBalance(i));
 		}
-		result = result.add(IERC20(token).balanceOf(address(this)));
 	}
 
 	function getProfit() view public returns (uint256) {
@@ -250,7 +229,7 @@ contract Dispatcher is DSAuth {
 			_th = ths[i];
 			require(_th.targetHandlerAddr != _targetHandlerAddr, "exist target handler");
 		}
-		ths.push(TargetHandler(_targetHandlerAddr, 0));		
+		ths.push(TargetHandler(_targetHandlerAddr, ITargetHandler(_targetHandlerAddr).getTargetAddress(), 0));		
 	}
 
 	function setReserveUpperLimit(uint256 _number) external onlyOwner {

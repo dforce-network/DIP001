@@ -1,6 +1,6 @@
 pragma solidity ^0.5.2;
 
-import './DSAuth.sol';
+import './DSLibrary/DSAuth.sol';
 
 interface IERC20 {
     function balanceOf(address _owner) external view returns (uint);
@@ -77,5 +77,9 @@ contract TargetHandler is DSAuth{
 
 	function getProfit() public view returns (uint256) {
 		return getBalance().sub(getPrinciple());
+	}
+
+	function getTargetAddress() public view returns (address) {
+		return targetAddr;
 	}
 }
