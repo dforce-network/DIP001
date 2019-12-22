@@ -13,15 +13,21 @@ interface ILendFMe {
 
 contract lendFMeHandler is ITargetHandler, DSAuth, DSMath {
 
-	address public targetAddr;
-	address public token;
-	uint256 public principle;
+	address targetAddr;
+	address token;
+	address dispatcher;	
+	uint256 principle;
 
 	constructor (address _targetAddr, address _token) public {
 		targetAddr = _targetAddr;
 		token = _token;
 		IERC20(token).approve(_targetAddr, uint256(-1));
 	}
+
+
+	function setDispatcher(address _dispatcher) public {
+		dispatcher = _dispatcher;
+	} 
 
 	// trigger token deposit
 	function trigger() external {
@@ -32,8 +38,8 @@ contract lendFMeHandler is ITargetHandler, DSAuth, DSMath {
 
 	// withdraw the token back to this contract
 	// TODO: check sender, must be dispatcher!!
-	function withdraw(uint256 _amounts) external auth {
-		//require(msg.sender == owner, "sender must be owner");
+	function withdraw(uint256 _amounts) external {
+		require(msg.sender == dispatcher, "sender must be owner");
 		// check the fund in the reserve (contract balance) is enough or not
 		// if not enough, drain from the defi
 		uint256 _tokenBalance = IERC20(token).balanceOf(address(this));
@@ -45,7 +51,7 @@ contract lendFMeHandler is ITargetHandler, DSAuth, DSMath {
 		require(IERC20(token).transfer(msg.sender, _amounts));
 	}
 
-	function withdrawProfit(address _beneficiary) external auth {
+	function withdrawProfit(address _beneficiary) external  {
 		uint256 _amount = getProfit();
 		ILendFMe(targetAddr).withdraw(address(token), _amount);
 		require(IERC20(token).transfer(_beneficiary, _amount));
@@ -65,5 +71,13 @@ contract lendFMeHandler is ITargetHandler, DSAuth, DSMath {
 
 	function getTargetAddress() public view returns (address) {
 		return targetAddr;
+	}
+
+	function getToken() view external returns (address) {
+		return token;
+	}
+
+	function getDispatcher() view public returns (address) {
+		return dispatcher;
 	}
 }

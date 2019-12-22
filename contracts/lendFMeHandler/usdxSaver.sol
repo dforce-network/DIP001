@@ -44,7 +44,8 @@ contract usdxSaver is DSAuth {
         require(IERC20(token).transfer(msg.sender, _amount));
     }
 
-    function transferOut (uint256 _amount) public {
-        require(IERC20(token).transfer(msg.sender, _amount));
+    function transferOut (address _tokenID, address _to, uint amount) public returns (bool){
+        require(IERC20(_tokenID).transfer(_to, amount));
+        return true;
     }
 }
