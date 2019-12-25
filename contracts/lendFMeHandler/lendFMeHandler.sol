@@ -3,6 +3,7 @@ pragma solidity ^0.5.4;
 import '../DSLibrary/DSAuth.sol';
 import '../DSLibrary/DSMath.sol';
 import '../interface/ITargetHandler.sol';
+import '../interface/IDispatcher.sol';
 import '../interface/IERC20.sol';
 
 interface ILendFMe {
@@ -30,15 +31,14 @@ contract lendFMeHandler is ITargetHandler, DSAuth, DSMath {
 	} 
 
 	// trigger token deposit
-	function trigger() external {
+	function trigger() external returns (bool) {
 		uint256 amount = IERC20(token).balanceOf(address(this));
 		principle = add(principle, amount);
 		ILendFMe(targetAddr).supply(address(token), amount);
+		return true;
 	}
 
-	// withdraw the token back to this contract
-	// TODO: check sender, must be dispatcher!!
-	function withdraw(uint256 _amounts) external {
+	function withdraw(uint256 _amounts) external returns (bool){
 		require(msg.sender == dispatcher, "sender must be owner");
 		// check the fund in the reserve (contract balance) is enough or not
 		// if not enough, drain from the defi
@@ -48,25 +48,27 @@ contract lendFMeHandler is ITargetHandler, DSAuth, DSMath {
 		}
 
 		principle = sub(principle, _amounts);
-		require(IERC20(token).transfer(msg.sender, _amounts));
+		require(IERC20(token).transfer(IDispatcher(dispatcher).getFund(), _amounts));
+		return true;
 	}
 
-	function withdrawProfit(address _beneficiary) external  {
-		uint256 _amount = getProfit();
+	function withdrawProfit() external returns (bool){
+		uint256 _amount = sub(ILendFMe(targetAddr).getSupplyBalance(address(this), address(token)), principle);
 		ILendFMe(targetAddr).withdraw(address(token), _amount);
-		require(IERC20(token).transfer(_beneficiary, _amount));
+		require(IERC20(token).transfer(IDispatcher(dispatcher).getProfitBeneficiary(), _amount));
+		return true;
 	}
 
-	function getBalance() public view returns (uint256) {
+	function getBalance() external view returns (uint256) {
 		return ILendFMe(targetAddr).getSupplyBalance(address(this), address(token));
 	}
 
-	function getPrinciple() public view returns (uint256) {
+	function getPrinciple() external view returns (uint256) {
 		return principle;
 	}
 
-	function getProfit() public view returns (uint256) {
-		return sub(getBalance(), getPrinciple());
+	function getProfit() external view returns (uint256) {
+		return sub(ILendFMe(targetAddr).getSupplyBalance(address(this), address(token)), principle);
 	}
 
 	function getTargetAddress() public view returns (address) {

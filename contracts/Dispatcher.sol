@@ -2,6 +2,7 @@ pragma solidity ^0.5.4;
 
 import './DSLibrary/DSAuth.sol';
 import './interface/ITargetHandler.sol';
+import './interface/IDispatcher.sol';
 import './interface/IERC20.sol';
 
 interface IFund {
@@ -24,16 +25,16 @@ library DSMath {
     }
 }
 
-contract Dispatcher is DSAuth {
+contract Dispatcher is IDispatcher, DSAuth {
 	using DSMath for uint256;
 
-	address public token;
-	address public profitBeneficiary;
-	address public fundPool;
-	TargetHandler[] public ths;
-	uint256 public reserveUpperLimit;
-	uint256 public reserveLowerLimit;
-	uint256 public executeUnit;
+	address token;
+	address profitBeneficiary;
+	address fundPool;
+	TargetHandler[] ths;
+	uint256 reserveUpperLimit;
+	uint256 reserveLowerLimit;
+	uint256 executeUnit;
 
 	struct TargetHandler {
 		address targetHandlerAddr;
@@ -62,10 +63,11 @@ contract Dispatcher is DSAuth {
 		reserveLowerLimit = 300; // 300 / 1000 = 0.3 
 	}
 
-	function trigger () external {
+	function trigger () external returns (bool) {
 		uint256 reserve = getReserve();
-		uint256 reserveMax = reserveUpperLimit * getBalance() / 1000;
-		uint256 reserveMin = reserveLowerLimit * getBalance() / 1000;
+		uint256 denominator = reserve.add(getPrinciple());
+		uint256 reserveMax = reserveUpperLimit * denominator / 1000;
+		uint256 reserveMin = reserveLowerLimit * denominator / 1000;
 		uint256 amounts;
 		if (reserve > reserveMax) {
 			amounts = reserve - reserveMax;
@@ -80,6 +82,7 @@ contract Dispatcher is DSAuth {
 				withdrawPrinciple(amounts);	
 			} 			
 		}
+		return true;
 	}
 
 	function internalDeposit (uint256 _amounts) internal {
@@ -137,13 +140,14 @@ contract Dispatcher is DSAuth {
 		}
 	}
 
-	function withdrawProfit () external {
+	function withdrawProfit () external returns (bool) {
 		uint256 i;
 		TargetHandler memory _th;
 		for(i = 0; i < ths.length; ++i) {
 			_th = ths[i];
-			ITargetHandler(_th.targetHandlerAddr).withdrawProfit(profitBeneficiary);
-		}		
+			ITargetHandler(_th.targetHandlerAddr).withdrawProfit();
+		}
+		return true;	
 	}
 
 	// getter function 
@@ -152,12 +156,12 @@ contract Dispatcher is DSAuth {
 	}
 
 	function getReserveRatio() view public returns (uint256) {
-		uint256 fraction = getReserve();
-		uint256 denominator = getPrinciple().add(fraction);
+		uint256 reserve = getReserve();
+		uint256 denominator = getPrinciple().add(reserve);
 		if (denominator == 0) {
 			return 0;
 		} else {
-			return fraction * 1000 / denominator;
+			return reserve * 1000 / denominator;
 		}
 	}
 
@@ -195,8 +199,32 @@ contract Dispatcher is DSAuth {
 		return ITargetHandler(ths[_index].targetHandlerAddr).getProfit();
 	}
 
+	function getFund() view external returns (address) {
+		return fundPool;
+	}
+
+	function getToken() view external returns (address) {
+		return token;
+	}
+
+	function getProfitBeneficiary() view external returns (address) {
+		return profitBeneficiary;
+	}
+
+	function getReserveUpperLimit() external view returns (uint256) {
+		return reserveUpperLimit;
+	}
+
+	function getReserveLowerLimit() external view returns (uint256) {
+		return reserveLowerLimit;
+	}
+
+	function getExecuteUnit() external view returns (uint256) {
+		return executeUnit;
+	}
+
 	// owner function 
-	function setAimedPropotion(uint256[] memory _thPropotion) public onlyOwner {
+	function setAimedPropotion(uint256[] calldata _thPropotion) external onlyOwner returns (bool){
 		require(ths.length == _thPropotion.length);
 		uint256 sum = 0;
 		uint256 i;
@@ -210,9 +238,10 @@ contract Dispatcher is DSAuth {
 			_th.aimedPropotion = _thPropotion[i];			
 			ths[i] = _th;
 		}
+		return true;
 	}
 
-	function removeTargetHandler(address _targetHandlerAddr, uint256 _index) external onlyOwner {
+	function removeTargetHandler(address _targetHandlerAddr, uint256 _index) external onlyOwner returns (bool) {
 		uint256 length = ths.length;
 		require(length != 1, "can not remove the last target handler");
 		require(_index < length, "not the correct index");
@@ -220,29 +249,39 @@ contract Dispatcher is DSAuth {
 		require(getTHBalance(_index) == 0, "must drain all balance in the target handler");
 		ths[_index] = ths[length - 1];
 		ths.length --;
+		return true;
 	}
 
-	function addTargetHandler(address _targetHandlerAddr) external onlyOwner {
+	function addTargetHandler(address _targetHandlerAddr) external onlyOwner returns (bool) {
 		uint256 length = ths.length;
 		TargetHandler memory _th;
 		for(uint256 i = 0; i < length; ++i) {
 			_th = ths[i];
 			require(_th.targetHandlerAddr != _targetHandlerAddr, "exist target handler");
 		}
-		ths.push(TargetHandler(_targetHandlerAddr, ITargetHandler(_targetHandlerAddr).getTargetAddress(), 0));		
+		ths.push(TargetHandler(_targetHandlerAddr, ITargetHandler(_targetHandlerAddr).getTargetAddress(), 0));
+		return true;	
 	}
 
-	function setReserveUpperLimit(uint256 _number) external onlyOwner {
+	function setReserveUpperLimit(uint256 _number) external onlyOwner returns (bool) {
 		require(_number > reserveLowerLimit);
 		reserveUpperLimit = _number;
+		return true;
 	}
 
-	function setReserveLowerLimit(uint256 _number) external onlyOwner {
+	function setReserveLowerLimit(uint256 _number) external onlyOwner returns (bool) {
 		require(_number < reserveUpperLimit);
 		reserveLowerLimit = _number;
+		return true;
 	}
 
-	function setExecuteUnit(uint256 _number) external onlyOwner {
+	function setExecuteUnit(uint256 _number) external onlyOwner returns (bool) {
 		executeUnit = _number;
+		return true;
+	}
+
+	function setProfitBeneficiary(address _profitBeneficiary) external onlyOwner returns (bool) {
+		profitBeneficiary = _profitBeneficiary;
+		return true;
 	}
 }
