@@ -3,20 +3,21 @@ pragma solidity ^0.5.4;
 import '../DSLibrary/DSAuth.sol';
 import '../DSLibrary/DSMath.sol';
 import '../interface/ITargetHandler.sol';
+import '../interface/IDispatcher.sol';
 import '../interface/IERC20.sol';
 
 interface CErc20 {
 	function mint(uint mintAmount) external returns (uint);
 	function redeemUnderlying(uint redeemAmount) external returns (uint);
-	function exchangeRateCurrent() external view returns (uint);
+	function exchangeRateStored() external view returns (uint);
 }
 
 contract CompoundHandler is ITargetHandler, DSAuth, DSMath {
 
-	address public targetAddr;
-	address public token;
-	uint256 public principle;
-	address public dispatcher;
+	address targetAddr;
+	address token;
+	uint256 principle;
+	address dispatcher;
 
 	constructor (address _targetAddr, address _token) public {
 		targetAddr = _targetAddr;
@@ -29,35 +30,38 @@ contract CompoundHandler is ITargetHandler, DSAuth, DSMath {
 	}
 
 	// trigger token deposit
-	function trigger() external {
+	function trigger() external returns (bool) {
 		uint256 amount = IERC20(token).balanceOf(address(this));
 		principle = add(principle, amount);
-		require(CErc20(token).mint(amount) == 0);
+		require(CErc20(targetAddr).mint(amount) == 0);
+		return true;
 	}
 
 	// withdraw the token back to this contract
-	function withdraw(uint256 _amounts) external auth {
+	function withdraw(uint256 _amounts) external returns (bool) {
 		require(msg.sender == dispatcher, "sender must be dispatcher");
 		// check the fund in the reserve (contract balance) is enough or not
 		// if not enough, drain from the defi
 		uint256 _tokenBalance = IERC20(token).balanceOf(address(this));
 		if (_tokenBalance < _amounts) {
-			require(CErc20(token).redeemUnderlying(sub(_amounts, _tokenBalance)) == 0);
+			require(CErc20(targetAddr).redeemUnderlying(sub(_amounts, _tokenBalance)) == 0);
 		}
 
 		principle = sub(principle, _amounts);
-		require(IERC20(token).transfer(msg.sender, _amounts));
+		require(IERC20(token).transfer(IDispatcher(dispatcher).getFund(), _amounts));
+		return true;
 	}
 
-	function withdrawProfit(address _beneficiary) external auth {
-		require(msg.sender == dispatcher, "sender must be dispatcher");
+	function withdrawProfit() external returns (bool) {
 		uint256 _amount = getProfit();
-		require(CErc20(token).redeemUnderlying(_amount) == 0);
-		require(IERC20(token).transfer(_beneficiary, _amount));
+		require(CErc20(targetAddr).redeemUnderlying(_amount) == 0);
+		require(IERC20(token).transfer(IDispatcher(dispatcher).getProfitBeneficiary(), _amount));
+		return true;
 	}
 
 	function getBalance() public view returns (uint256) {
-		return mul(IERC20(token).balanceOf(address(this)), CErc20(token).exchangeRateCurrent());
+	    uint256 currentBalance = mul(IERC20(targetAddr).balanceOf(address(this)), CErc20(targetAddr).exchangeRateStored());
+	    return currentBalance / (10 ** 18);
 	}
 
 	function getPrinciple() public view returns (uint256) {
@@ -65,10 +69,24 @@ contract CompoundHandler is ITargetHandler, DSAuth, DSMath {
 	}
 
 	function getProfit() public view returns (uint256) {
-		return sub(getBalance(), getPrinciple());
+	    uint256 _balance = getBalance();
+	    uint256 _principle = getPrinciple();
+	    if (_balance < _principle) {
+	        return 0;
+	    } else {
+	        return sub(_balance, _principle);
+	    }
 	}
 
 	function getTargetAddress() public view returns (address) {
 		return targetAddr;
+	}
+
+	function getToken() external view returns (address) {
+		return token;
+	}
+
+	function getDispatcher() external view returns (address) {
+		return dispatcher;
 	}
 }
