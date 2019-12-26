@@ -19,6 +19,10 @@ contract DispatcherEntrance is DSAuth{
 	function trigger(address _fund, address _token) onlySupportedPair(_fund, _token) external returns (bool) {
 		return IDispatcher(dispatchers[_fund][_token]).trigger();
 	}
+
+	function getDispatcher(address _fund, address _token) view public returns (address) {
+		return dispatchers[_fund][_token];
+	}
 	
 	function getReserve(address _fund, address _token) onlySupportedPair(_fund, _token) view public returns (uint256) {
 		return IDispatcher(dispatchers[_fund][_token]).getReserve();

@@ -23,7 +23,7 @@ contract FakeDispatcher {
 	}
 	
 	function callWithdraw(address _target, uint _amount) external {
-	    require(ITargetHandler(_target).withdraw(_amount) == true);
+	    require(ITargetHandler(_target).withdraw(_amount) == 0);
 	}
 	
 }

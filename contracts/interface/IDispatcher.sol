@@ -17,9 +17,17 @@ interface IDispatcher {
 	function getTHProfit(uint256 _index) external view returns (uint256);
 	function getToken() external view returns (address);
 	function getFund() external view returns (address);
+
+	// 取得收益對象地址
 	function getProfitBeneficiary() external view returns (address);
+
+	// 取得 reserve 比例上限
 	function getReserveUpperLimit() external view returns (uint256);
+
+	// 取得 reserve 比例下限
 	function getReserveLowerLimit() external view returns (uint256);
+
+	// 取得執行最小單位
 	function getExecuteUnit() external view returns (uint256);
 
 	// governmence function 

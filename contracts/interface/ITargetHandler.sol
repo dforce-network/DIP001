@@ -1,9 +1,9 @@
 pragma solidity ^0.5.4;
 
 interface ITargetHandler {
-	function trigger() external returns (bool); // trigger token deposit 
-	function withdraw(uint256 _amounts) external returns (bool);
-	function withdrawProfit() external returns (bool);
+	function trigger() external returns (uint256); // trigger token deposit 
+	function withdraw(uint256 _amounts) external returns (uint256);
+	function withdrawProfit() external returns (uint256);
 	function getBalance() view external returns (uint256);
 	function getPrinciple() view external returns (uint256);
 	function getProfit() view external returns (uint256);

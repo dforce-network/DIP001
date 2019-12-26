@@ -13,6 +13,9 @@ interface IDispatcherEntrance {
 	// 觸發該 dispatcher 執行資金移轉
 	function trigger(address _fund, address _token) external returns (bool);
 
+	// 觸發該 dispatcher 的獲益提領
+	function withdrawProfit(address _fund, address _token) external returns (bool);
+
 	// 取得該 dispatcher 現有 reserve 值
 	function getReserve(address _fund, address _token) external returns (uint256);
 
