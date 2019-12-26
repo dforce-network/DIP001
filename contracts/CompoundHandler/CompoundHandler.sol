@@ -33,30 +33,40 @@ contract CompoundHandler is ITargetHandler, DSAuth, DSMath {
 	function trigger() external returns (bool) {
 		uint256 amount = IERC20(token).balanceOf(address(this));
 		principle = add(principle, amount);
-		require(CErc20(targetAddr).mint(amount) == 0);
-		return true;
+		if(CErc20(targetAddr).mint(amount) == 0) {
+			return 0;
+		}
+		return 1;
 	}
 
 	// withdraw the token back to this contract
-	function withdraw(uint256 _amounts) external returns (bool) {
+	function withdraw(uint256 _amounts) external returns (uint256) {
+		uint256 returnCode = 0;
 		require(msg.sender == dispatcher, "sender must be dispatcher");
 		// check the fund in the reserve (contract balance) is enough or not
 		// if not enough, drain from the defi
 		uint256 _tokenBalance = IERC20(token).balanceOf(address(this));
 		if (_tokenBalance < _amounts) {
-			require(CErc20(targetAddr).redeemUnderlying(sub(_amounts, _tokenBalance)) == 0);
+			if(CErc20(targetAddr).redeemUnderlying(sub(_amounts, _tokenBalance)) != 0) { // redeem fail
+				_amounts = _tokenBalance;
+				returnCode = 1;
+			}
 		}
 
 		principle = sub(principle, _amounts);
 		require(IERC20(token).transfer(IDispatcher(dispatcher).getFund(), _amounts));
-		return true;
+		return returnCode;
 	}
 
-	function withdrawProfit() external returns (bool) {
+	function withdrawProfit() external returns (uint256) {
 		uint256 _amount = getProfit();
-		require(CErc20(targetAddr).redeemUnderlying(_amount) == 0);
-		require(IERC20(token).transfer(IDispatcher(dispatcher).getProfitBeneficiary(), _amount));
-		return true;
+		if (_amount != 0) {
+			if (CErc20(targetAddr).redeemUnderlying(_amount) != 0) {
+				return 1;	
+			}
+			require(IERC20(token).transfer(IDispatcher(dispatcher).getProfitBeneficiary(), _amount));
+		}
+		return 0;
 	}
 
 	function getBalance() public view returns (uint256) {
