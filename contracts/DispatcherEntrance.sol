@@ -3,7 +3,7 @@ pragma solidity ^0.5.4;
 import './DSLibrary/DSAuth.sol';
 import './interface/IDispatcher.sol';
 
-contract DispatcherEntrance is DSAuth{
+contract DispatcherEntrance is DSAuth {
 
 	mapping(address => mapping(address => address)) dispatchers;
 
@@ -20,7 +20,7 @@ contract DispatcherEntrance is DSAuth{
 		return IDispatcher(dispatchers[_fund][_token]).trigger();
 	}
 
-	function withdrawProfit(address _fund, address _token) onlySupportedPair(_fund, _token) external returns (bool) {
+	function withdrawProfit(address _fund, address _token) onlySupportedPair(_fund, _token) auth external returns (bool) {
 		return IDispatcher(dispatchers[_fund][_token]).withdrawProfit();
 	}
 

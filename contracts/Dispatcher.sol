@@ -140,7 +140,7 @@ contract Dispatcher is IDispatcher, DSAuth {
 		}
 	}
 
-	function withdrawProfit () external returns (bool) {
+	function withdrawProfit () external auth returns (bool) {
 		uint256 i;
 		TargetHandler memory _th;
 		for(i = 0; i < ths.length; ++i) {
