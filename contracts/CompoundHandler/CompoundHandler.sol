@@ -60,7 +60,7 @@ contract CompoundHandler is ITargetHandler, DSAuth, DSMath {
 		return 0;
 	}
 
-	function withdrawProfit() external returns (uint256) {
+	function withdrawProfit() external auth returns (uint256) {
 		uint256 _amount = getProfit();
 		if (_amount != 0) {
 			if (CErc20(targetAddr).redeemUnderlying(_amount) != 0) {

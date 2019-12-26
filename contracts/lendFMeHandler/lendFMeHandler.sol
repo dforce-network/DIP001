@@ -62,7 +62,7 @@ contract lendFMeHandler is ITargetHandler, DSAuth, DSMath {
 		}
 	}
 
-	function withdrawProfit() external returns (uint256){
+	function withdrawProfit() external auth returns (uint256){
 		uint256 _amount = sub(ILendFMe(targetAddr).getSupplyBalance(address(this), address(token)), principle);
 		if (ILendFMe(targetAddr).withdraw(address(token), _amount) == 0) {
 			require(IERC20(token).transfer(IDispatcher(dispatcher).getProfitBeneficiary(), _amount));
