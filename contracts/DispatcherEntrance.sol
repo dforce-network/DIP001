@@ -20,6 +20,10 @@ contract DispatcherEntrance is DSAuth{
 		return IDispatcher(dispatchers[_fund][_token]).trigger();
 	}
 
+	function withdrawProfit(address _fund, address _token) onlySupportedPair(_fund, _token) external returns (bool) {
+		return IDispatcher(dispatchers[_fund][_token]).withdrawProfit();
+	}
+
 	function getDispatcher(address _fund, address _token) view public returns (address) {
 		return dispatchers[_fund][_token];
 	}

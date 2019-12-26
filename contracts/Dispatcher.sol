@@ -223,8 +223,34 @@ contract Dispatcher is IDispatcher, DSAuth {
 		return executeUnit;
 	}
 
+	function getPropotion() external view returns (uint256) {
+		uint256 length = ths.length;
+		TargetHandler memory _th;
+		uint256 result;
+		for (uint256 i = 0; i < length; ++i) {
+			if (i != 0) {
+				result = result * 1000;
+			}
+			_th = ths[i];
+			result += _th.aimedPropotion;
+		}
+		return result;
+	}
+
+	function getTHCount() external view returns (uint256) {
+		return ths.length;
+	}
+
+	function getTHAddress(uint256 _index) external view returns (address) {
+		return ths[_index].targetHandlerAddr;
+	}
+
+	function getTargetAddress(uint256 _index) external view returns (address) {
+		return ths[_index].targetAddr;
+	}
+
 	// owner function 
-	function setAimedPropotion(uint256[] calldata _thPropotion) external onlyOwner returns (bool){
+	function setAimedPropotion(uint256[] calldata _thPropotion) external auth returns (bool){
 		require(ths.length == _thPropotion.length);
 		uint256 sum = 0;
 		uint256 i;
@@ -241,7 +267,7 @@ contract Dispatcher is IDispatcher, DSAuth {
 		return true;
 	}
 
-	function removeTargetHandler(address _targetHandlerAddr, uint256 _index) external onlyOwner returns (bool) {
+	function removeTargetHandler(address _targetHandlerAddr, uint256 _index) external auth returns (bool) {
 		uint256 length = ths.length;
 		require(length != 1, "can not remove the last target handler");
 		require(_index < length, "not the correct index");
@@ -252,7 +278,7 @@ contract Dispatcher is IDispatcher, DSAuth {
 		return true;
 	}
 
-	function addTargetHandler(address _targetHandlerAddr) external onlyOwner returns (bool) {
+	function addTargetHandler(address _targetHandlerAddr) external auth returns (bool) {
 		uint256 length = ths.length;
 		TargetHandler memory _th;
 		for(uint256 i = 0; i < length; ++i) {
@@ -263,24 +289,24 @@ contract Dispatcher is IDispatcher, DSAuth {
 		return true;	
 	}
 
-	function setReserveUpperLimit(uint256 _number) external onlyOwner returns (bool) {
+	function setReserveUpperLimit(uint256 _number) external auth returns (bool) {
 		require(_number > reserveLowerLimit);
 		reserveUpperLimit = _number;
 		return true;
 	}
 
-	function setReserveLowerLimit(uint256 _number) external onlyOwner returns (bool) {
+	function setReserveLowerLimit(uint256 _number) external auth returns (bool) {
 		require(_number < reserveUpperLimit);
 		reserveLowerLimit = _number;
 		return true;
 	}
 
-	function setExecuteUnit(uint256 _number) external onlyOwner returns (bool) {
+	function setExecuteUnit(uint256 _number) external auth returns (bool) {
 		executeUnit = _number;
 		return true;
 	}
 
-	function setProfitBeneficiary(address _profitBeneficiary) external onlyOwner returns (bool) {
+	function setProfitBeneficiary(address _profitBeneficiary) external auth returns (bool) {
 		profitBeneficiary = _profitBeneficiary;
 		return true;
 	}

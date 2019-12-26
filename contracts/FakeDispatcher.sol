@@ -5,6 +5,8 @@ import './interface/ITargetHandler.sol';
 contract FakeDispatcher {
     address public fundPool;
     address public profitBeneficiary;
+
+   	uint256 public returnCode;
     
     function setFund(address _addr) external {
         fundPool = _addr;
@@ -23,7 +25,7 @@ contract FakeDispatcher {
 	}
 	
 	function callWithdraw(address _target, uint _amount) external {
-	    require(ITargetHandler(_target).withdraw(_amount) == 0);
+	    returnCode = ITargetHandler(_target).withdraw(_amount);
 	}
 	
 }
