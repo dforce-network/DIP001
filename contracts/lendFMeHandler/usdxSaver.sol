@@ -27,7 +27,6 @@ library DSMath {
 contract usdxSaver is DSAuth {
 	using DSMath for uint256;
 
-    mapping(address => uint256) public balances;
 	address public token;
 
 	constructor (address _token) public {
@@ -35,12 +34,10 @@ contract usdxSaver is DSAuth {
 	}
 
     function deposit (uint256 _amount) public {
-        balances[msg.sender] += _amount;
         require(IERC20(token).transferFrom(msg.sender, address(this), _amount));
     }
 
     function withdraw (uint256 _amount) public {
-        balances[msg.sender] -= _amount;
         require(IERC20(token).transfer(msg.sender, _amount));
     }
 
