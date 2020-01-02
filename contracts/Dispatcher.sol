@@ -108,7 +108,7 @@ contract Dispatcher is IDispatcher, DSAuth {
 					_amounts -= amountsToTH;
 				}
 				require(IFund(fundPool).transferOut(token, _th.targetHandlerAddr, amountsToTH));
-				ITargetHandler(_th.targetHandlerAddr).trigger();
+				ITargetHandler(_th.targetHandlerAddr).deposit();
 			}
 		}	
 	}

@@ -29,7 +29,7 @@ contract CompoundHandler is ITargetHandler, DSAuth, DSMath {
 		dispatcher = _dispatcher;
 	}
 
-	// trigger token deposit
+	// token deposit
 	function deposit() external returns (uint256) {
 		uint256 amount = IERC20(token).balanceOf(address(this));
 		principle = add(principle, amount);

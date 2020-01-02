@@ -39,7 +39,7 @@ contract TargetHandler is DSAuth{
 		IERC20(token).approve(_targetAddr, uint256(-1));
 	}
 
-	// trigger token deposit
+	// token deposit
 	function deposit() external {
 		uint256 amount = IERC20(token).balanceOf(address(this));
 		principle = principle.add(amount);
