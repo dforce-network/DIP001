@@ -5,7 +5,7 @@ var TargetHandler = artifacts.require("TargetHandler")
 var DeFi = artifacts.require("FakeDeFi")
 var DSGuard = artifacts.require("DSGuard")
 
-contract('test', function(accounts) {
+contract('test', function (accounts) {
 	const admin = accounts[0]
 	const user1 = accounts[1]
 	const user2 = accounts[2]
@@ -20,20 +20,20 @@ contract('test', function(accounts) {
 		return await web3.utils.fromWei(amount, "ether")
 	}
 
-	it("TargetHandler", async function() {
+	it("TargetHandler", async function () {
 		let tx
 		let token = await DSToken.new("0x444600000000000000000000000000")
 		tx = await token.mint(user1, await web3.utils.toWei("100", "ether"))
 		tx = await token.mint(user2, await web3.utils.toWei("100", "ether"))
 
-		const balanceOf = async function(address) {
+		const balanceOf = async function (address) {
 			return await toEther(await token.balanceOf(address))
 		}
 
 		let defi = await DeFi.new(token.address);
 		let targetHandler = await TargetHandler.new(defi.address, token.address)
 
-		tx = await token.transfer(targetHandler.address, await web3.utils.toWei("10", "ether"), {from: user1})
+		tx = await token.transfer(targetHandler.address, await web3.utils.toWei("10", "ether"), { from: user1 })
 		console.log("infornation before trigger")
 		//console.log("balance of user1: ", await balanceOf(user1))
 		console.log("balance of targetHandler: ", await balanceOf(targetHandler.address))
@@ -43,7 +43,7 @@ contract('test', function(accounts) {
 		console.log("profit in Defi: ", await toEther((await targetHandler.getProfit.call()).toString()));
 		console.log("-------------------------------------------")
 
-		tx = await targetHandler.trigger()
+		tx = await targetHandler.deposit()
 		console.log("infornation after trigger")
 		//console.log("balance of user1: ", await balanceOf(user1))
 		console.log("balance of targetHandler: ", await balanceOf(targetHandler.address))
@@ -53,7 +53,7 @@ contract('test', function(accounts) {
 		console.log("profit in Defi: ", await toEther((await targetHandler.getProfit.call()).toString()));
 		console.log("-------------------------------------------")
 
-		tx = await token.transfer(defi.address, await web3.utils.toWei("10", "ether"), {from: user2})
+		tx = await token.transfer(defi.address, await web3.utils.toWei("10", "ether"), { from: user2 })
 		tx = await defi.makeProfitToUser(targetHandler.address)
 		console.log("infornation after interest")
 		//console.log("balance of user1: ", await balanceOf(user1))
@@ -65,17 +65,17 @@ contract('test', function(accounts) {
 		console.log("-------------------------------------------")
 	});
 
-	it("Dispatcher", async function() {
+	it("Dispatcher", async function () {
 		let tx
 		let token = await DSToken.new("0x444600000000000000000000000000")
 		tx = await token.mint(user1, await web3.utils.toWei("1000000", "ether"))
 		tx = await token.mint(user2, await web3.utils.toWei("1000000", "ether"))
 
-		const balanceOf = async function(address) {
+		const balanceOf = async function (address) {
 			return await toEther(await token.balanceOf(address))
 		}
 
-		const showResult = async function() {
+		const showResult = async function () {
 			console.log("\tbalance of dispatcher: ", await toEther((await dispatcher.getBalance.call()).toString()))
 			console.log("\tbalance of targetHandler_1: ", await toEther((await dispatcher.getTHBalance.call(0)).toString()))
 			console.log("\tbalance of targetHandler_2: ", await toEther((await dispatcher.getTHBalance.call(1)).toString()))
@@ -87,9 +87,9 @@ contract('test', function(accounts) {
 			console.log("\tprofit of dispatcher: ", await toEther((await dispatcher.getProfit.call()).toString()))
 			console.log("\tprofit of targetHandler_1: ", await toEther((await dispatcher.getTHProfit.call(0)).toString()))
 			console.log("\tprofit of targetHandler_2: ", await toEther((await dispatcher.getTHProfit.call(1)).toString()))
-			console.log("")	
+			console.log("")
 			await showAimedPropotion()
-			await showCurrentPropotion()		
+			await showCurrentPropotion()
 		}
 
 		const showAimedPropotion = async function () {
@@ -98,7 +98,7 @@ contract('test', function(accounts) {
 
 			targetInfo = await dispatcher.ths.call(1)
 			console.log("\ttargetHandler 2 aimedPropotion: ", targetInfo.aimedPropotion.toNumber() / 1000)
-			console.log("")		
+			console.log("")
 		}
 
 		const showCurrentPropotion = async function () {
@@ -121,14 +121,14 @@ contract('test', function(accounts) {
 		let dsGuard = await DSGuard.new()
 
 		// set authority
-		tx = await dispatcher.setAuthority(dsGuard.address, {from: admin})
-		tx = await targetHandler_1.setAuthority(dsGuard.address, {from: admin})
-		tx = await targetHandler_2.setAuthority(dsGuard.address, {from: admin})
-		tx = await dsGuard.permitx(dispatcher.address, targetHandler_1.address, {from: admin})
-		tx = await dsGuard.permitx(dispatcher.address, targetHandler_2.address, {from: admin})
+		tx = await dispatcher.setAuthority(dsGuard.address, { from: admin })
+		tx = await targetHandler_1.setAuthority(dsGuard.address, { from: admin })
+		tx = await targetHandler_2.setAuthority(dsGuard.address, { from: admin })
+		tx = await dsGuard.permitx(dispatcher.address, targetHandler_1.address, { from: admin })
+		tx = await dsGuard.permitx(dispatcher.address, targetHandler_2.address, { from: admin })
 
-		tx = await token.approvex(dispatcher.address, {from: user1})
-		tx = await token.approvex(dispatcher.address, {from: user2})
+		tx = await token.approvex(dispatcher.address, { from: user1 })
+		tx = await token.approvex(dispatcher.address, { from: user2 })
 
 		console.log("address info")
 		console.log("defi_1: ", defi_1.address)
@@ -141,7 +141,7 @@ contract('test', function(accounts) {
 		console.log("-------------------------------------------")
 		console.log("initial infornation")
 		console.log("reserve ratio max: ", (await dispatcher.reserveUpperLimit.call()).toNumber() / 1000)
-		console.log("reserve ratio min: ", (await dispatcher.reserveLowerLimit.call()).toNumber() / 1000)	
+		console.log("reserve ratio min: ", (await dispatcher.reserveLowerLimit.call()).toNumber() / 1000)
 		let targetInfo = await dispatcher.ths.call(0)
 		console.log("\ttarget 1 info: ")
 		console.log("\t\taddress: ", targetInfo.targetHandlerAddr)
@@ -159,15 +159,15 @@ contract('test', function(accounts) {
 		// should reserve 3.5, and dispatch 6.5 / 5 = 1.3 to th1, 5.2 to th2
 		console.log("-------------------------------------------")
 		console.log("infornation after deposit 10 tokens")
-		tx = await token.transfer(dispatcher.address, await ether("10"), {from: user2})
+		tx = await token.transfer(dispatcher.address, await ether("10"), { from: user2 })
 		tx = await dispatcher.trigger()
 		console.log(tx.receipt.gasUSed)
 		await showResult()
 
 		console.log("-------------------------------------------")
 		console.log("information after defi_1 get 10% profit and difi_2 get two 10% profit")
-		tx = await token.transfer(defi_1.address, await ether("1000"), {from: user2})
-		tx = await token.transfer(defi_2.address, await ether("1000"), {from: user2})
+		tx = await token.transfer(defi_1.address, await ether("1000"), { from: user2 })
+		tx = await token.transfer(defi_2.address, await ether("1000"), { from: user2 })
 		tx = await defi_1.makeProfitToUser(targetHandler_1.address)
 		tx = await defi_2.makeProfitToUser(targetHandler_2.address)
 		tx = await defi_2.makeProfitToUser(targetHandler_2.address)
@@ -175,7 +175,7 @@ contract('test', function(accounts) {
 
 		console.log("-------------------------------------------")
 		console.log("deposit 10 more tokens")
-		tx = await token.transfer(dispatcher.address, await ether("10"), {from: user2})
+		tx = await token.transfer(dispatcher.address, await ether("10"), { from: user2 })
 		tx = await dispatcher.trigger()
 		console.log(tx.receipt.gasUSed)
 		await showResult()
@@ -205,28 +205,28 @@ contract('test', function(accounts) {
 		console.log("-------------------------------------------")
 		console.log("update aimed propotion to 4:6")
 		targetPercentage = [400, 600]
-		tx = await dispatcher.setAimedPropotion(targetPercentage, {from: admin})
+		tx = await dispatcher.setAimedPropotion(targetPercentage, { from: admin })
 		await showAimedPropotion()
 		await showCurrentPropotion()
 
 		console.log("-------------------------------------------")
 		console.log("deposit 10 more tokens")
-		tx = await token.transfer(dispatcher.address, await ether("10"), {from: user2})
+		tx = await token.transfer(dispatcher.address, await ether("10"), { from: user2 })
 		tx = await dispatcher.trigger()
 		console.log(tx.receipt.gasUSed)
 		await showResult()
 
 		console.log("-------------------------------------------")
 		console.log("deposit 50 more tokens")
-		tx = await token.transfer(dispatcher.address, await ether("50"), {from: user2})
+		tx = await token.transfer(dispatcher.address, await ether("50"), { from: user2 })
 		tx = await dispatcher.trigger()
 		console.log(tx.receipt.gasUSed)
 		await showResult()
 
 		console.log("-------------------------------------------")
 		console.log("defi get profit")
-		tx = await token.transfer(defi_1.address, await ether("1000"), {from: user2})
-		tx = await token.transfer(defi_2.address, await ether("1000"), {from: user2})
+		tx = await token.transfer(defi_1.address, await ether("1000"), { from: user2 })
+		tx = await token.transfer(defi_2.address, await ether("1000"), { from: user2 })
 		tx = await defi_1.makeProfitToUser(targetHandler_1.address)
 		tx = await defi_2.makeProfitToUser(targetHandler_2.address)
 		tx = await defi_2.makeProfitToUser(targetHandler_2.address)

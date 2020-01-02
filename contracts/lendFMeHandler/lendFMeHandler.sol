@@ -31,7 +31,7 @@ contract lendFMeHandler is ITargetHandler, DSAuth, DSMath {
 	} 
 
 	// trigger token deposit
-	function trigger() external returns (uint256) {
+	function deposit() external returns (uint256) {
 		uint256 amount = IERC20(token).balanceOf(address(this));
 		principle = add(principle, amount);
 		if(ILendFMe(targetAddr).supply(address(token), amount) == 0) {
