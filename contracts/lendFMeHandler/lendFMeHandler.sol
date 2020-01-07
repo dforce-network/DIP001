@@ -16,7 +16,7 @@ contract lendFMeHandler is ITargetHandler, DSAuth, DSMath {
 
 	address targetAddr;
 	address token;
-	address dispatcher;	
+	address dispatcher;
 	uint256 principle;
 
 	constructor (address _targetAddr, address _token) public {
@@ -28,7 +28,7 @@ contract lendFMeHandler is ITargetHandler, DSAuth, DSMath {
 
 	function setDispatcher(address _dispatcher) public {
 		dispatcher = _dispatcher;
-	} 
+	}
 
 	// token deposit
 	function deposit() external returns (uint256) {
@@ -50,12 +50,12 @@ contract lendFMeHandler is ITargetHandler, DSAuth, DSMath {
 		if (_tokenBalance < _amounts) {
 			if (ILendFMe(targetAddr).withdraw(address(token), sub(_amounts, _tokenBalance)) == 0) {
 				principle = sub(principle, _amounts);
-				require(IERC20(token).transfer(IDispatcher(dispatcher).getFund(), _amounts));
+				IERC20(token).transfer(IDispatcher(dispatcher).getFund(), _amounts);
 				return 0;
 			} else {
 				if (_tokenBalance > 0) {
 					principle = sub(principle, _tokenBalance);
-					require(IERC20(token).transfer(IDispatcher(dispatcher).getFund(), _tokenBalance));
+					IERC20(token).transfer(IDispatcher(dispatcher).getFund(), _tokenBalance);
 				}
 				return 1;
 			}
@@ -65,8 +65,8 @@ contract lendFMeHandler is ITargetHandler, DSAuth, DSMath {
 	function withdrawProfit() external auth returns (uint256){
 		uint256 _amount = sub(ILendFMe(targetAddr).getSupplyBalance(address(this), address(token)), principle);
 		if (ILendFMe(targetAddr).withdraw(address(token), _amount) == 0) {
-			require(IERC20(token).transfer(IDispatcher(dispatcher).getProfitBeneficiary(), _amount));
-			return 0;	
+			IERC20(token).transfer(IDispatcher(dispatcher).getProfitBeneficiary(), _amount);
+			return 0;
 		}
 		return 1;
 	}
@@ -87,11 +87,11 @@ contract lendFMeHandler is ITargetHandler, DSAuth, DSMath {
 		return targetAddr;
 	}
 
-	function getToken() view external returns (address) {
+	function getToken() external view returns (address) {
 		return token;
 	}
 
-	function getDispatcher() view public returns (address) {
+	function getDispatcher() public view returns (address) {
 		return dispatcher;
 	}
 }

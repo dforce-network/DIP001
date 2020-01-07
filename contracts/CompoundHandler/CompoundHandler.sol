@@ -49,14 +49,14 @@ contract CompoundHandler is ITargetHandler, DSAuth, DSMath {
 			if(CErc20(targetAddr).redeemUnderlying(sub(_amounts, _tokenBalance)) != 0) { // redeem fail
 				if (_tokenBalance != 0) {
 					principle = sub(principle, _tokenBalance);
-					require(IERC20(token).transfer(IDispatcher(dispatcher).getFund(), _tokenBalance));
+					IERC20(token).transfer(IDispatcher(dispatcher).getFund(), _tokenBalance);
 				}
-				return 1;	
+				return 1;
 			}
 		}
 
 		principle = sub(principle, _amounts);
-		require(IERC20(token).transfer(IDispatcher(dispatcher).getFund(), _amounts));
+		IERC20(token).transfer(IDispatcher(dispatcher).getFund(), _amounts);
 		return 0;
 	}
 
@@ -64,9 +64,9 @@ contract CompoundHandler is ITargetHandler, DSAuth, DSMath {
 		uint256 _amount = getProfit();
 		if (_amount != 0) {
 			if (CErc20(targetAddr).redeemUnderlying(_amount) != 0) {
-				return 1;	
+				return 1;
 			}
-			require(IERC20(token).transfer(IDispatcher(dispatcher).getProfitBeneficiary(), _amount));
+			IERC20(token).transfer(IDispatcher(dispatcher).getProfitBeneficiary(), _amount);
 		}
 		return 0;
 	}

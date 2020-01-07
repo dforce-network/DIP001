@@ -12,51 +12,51 @@ contract DispatcherEntrance is DSAuth {
         _;
     }
 
-	function registDispatcher(address _fund, address _token, address _dispatcher) auth external {
+	function registDispatcher(address _fund, address _token, address _dispatcher) external auth {
 		dispatchers[_fund][_token] = _dispatcher;
 	}
 
-	function trigger(address _fund, address _token) onlySupportedPair(_fund, _token) external returns (bool) {
+	function trigger(address _fund, address _token) external onlySupportedPair(_fund, _token) returns (bool) {
 		return IDispatcher(dispatchers[_fund][_token]).trigger();
 	}
 
-	function withdrawProfit(address _fund, address _token) onlySupportedPair(_fund, _token) auth external returns (bool) {
+	function withdrawProfit(address _fund, address _token) external onlySupportedPair(_fund, _token) auth returns (bool) {
 		return IDispatcher(dispatchers[_fund][_token]).withdrawProfit();
 	}
 
-	function getDispatcher(address _fund, address _token) view public returns (address) {
+	function getDispatcher(address _fund, address _token) public view returns (address) {
 		return dispatchers[_fund][_token];
 	}
-	
-	function getReserve(address _fund, address _token) onlySupportedPair(_fund, _token) view public returns (uint256) {
+
+	function getReserve(address _fund, address _token) public onlySupportedPair(_fund, _token) view returns (uint256) {
 		return IDispatcher(dispatchers[_fund][_token]).getReserve();
 	}
 
-	function getReserveRatio(address _fund, address _token) onlySupportedPair(_fund, _token) view public returns (uint256) {
+	function getReserveRatio(address _fund, address _token) public onlySupportedPair(_fund, _token) view returns (uint256) {
 		return IDispatcher(dispatchers[_fund][_token]).getReserveRatio();
 	}
 
-	function getPrinciple(address _fund, address _token) onlySupportedPair(_fund, _token) view public returns (uint256) {
-		return IDispatcher(dispatchers[_fund][_token]).getPrinciple();	
+	function getPrinciple(address _fund, address _token) public onlySupportedPair(_fund, _token) view returns (uint256) {
+		return IDispatcher(dispatchers[_fund][_token]).getPrinciple();
 	}
 
-	function getBalance(address _fund, address _token) onlySupportedPair(_fund, _token) view public returns (uint256) {
+	function getBalance(address _fund, address _token) public onlySupportedPair(_fund, _token) view returns (uint256) {
 		return IDispatcher(dispatchers[_fund][_token]).getBalance();
 	}
 
-	function getProfit(address _fund, address _token) onlySupportedPair(_fund, _token) view public returns (uint256) {
+	function getProfit(address _fund, address _token) public onlySupportedPair(_fund, _token) view returns (uint256) {
 		return IDispatcher(dispatchers[_fund][_token]).getProfit();
 	}
 
-	function getTHPrinciple(address _fund, address _token, uint256 _index) onlySupportedPair(_fund, _token) view public returns (uint256) {
+	function getTHPrinciple(address _fund, address _token, uint256 _index) public onlySupportedPair(_fund, _token) view returns (uint256) {
 		return IDispatcher(dispatchers[_fund][_token]).getTHPrinciple(_index);
 	}
 
-	function getTHBalance(address _fund, address _token, uint256 _index) onlySupportedPair(_fund, _token) view public returns (uint256) {
+	function getTHBalance(address _fund, address _token, uint256 _index) public onlySupportedPair(_fund, _token) view returns (uint256) {
 		return IDispatcher(dispatchers[_fund][_token]).getTHBalance(_index);
 	}
 
-	function getTHProfit(address _fund, address _token, uint256 _index) onlySupportedPair(_fund, _token) view public returns (uint256) {
+	function getTHProfit(address _fund, address _token, uint256 _index) public onlySupportedPair(_fund, _token) view returns (uint256) {
 		return IDispatcher(dispatchers[_fund][_token]).getTHProfit(_index);
 	}
 }
