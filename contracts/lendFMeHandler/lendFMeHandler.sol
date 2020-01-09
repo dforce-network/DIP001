@@ -13,6 +13,8 @@ interface ILendFMe {
 }
 
 contract lendFMeHandler is ITargetHandler, DSAuth, DSMath {
+    
+    event WithdrawFailed(uint256 _amounts);
 
 	address targetAddr;
 	address token;
@@ -57,6 +59,7 @@ contract lendFMeHandler is ITargetHandler, DSAuth, DSMath {
 					principle = sub(principle, _tokenBalance);
 					IERC20(token).transfer(IDispatcher(dispatcher).getFund(), _tokenBalance);
 				}
+				emit WithdrawFailed(_amounts);
 				return 1;
 			}
 		}
@@ -84,15 +87,15 @@ contract lendFMeHandler is ITargetHandler, DSAuth, DSMath {
 		return 0;
 	}
 
-	function getBalance() external view returns (uint256) {
+	function getBalance() public view returns (uint256) {
 		return ILendFMe(targetAddr).getSupplyBalance(address(this), address(token));
 	}
 
-	function getPrinciple() external view returns (uint256) {
+	function getPrinciple() public view returns (uint256) {
 		return principle;
 	}
 
-	function getProfit() external view returns (uint256) {
+	function getProfit() public view returns (uint256) {
 		return sub(ILendFMe(targetAddr).getSupplyBalance(address(this), address(token)), principle);
 	}
 

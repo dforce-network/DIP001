@@ -227,16 +227,13 @@ contract Dispatcher is IDispatcher, DSAuth {
 		return executeUnit;
 	}
 
-	function getPropotion() external view returns (uint256) {
+	function getPropotion() external view returns (uint256[] memory) {
 		uint256 length = ths.length;
 		TargetHandler memory _th;
-		uint256 result;
+		uint256[] memory result;
 		for (uint256 i = 0; i < length; ++i) {
-			if (i != 0) {
-				result = result * 1000;
-			}
 			_th = ths[i];
-			result += _th.aimedPropotion;
+			result[i] = _th.aimedPropotion;
 		}
 		return result;
 	}
@@ -294,13 +291,13 @@ contract Dispatcher is IDispatcher, DSAuth {
 	}
 
 	function setReserveUpperLimit(uint256 _number) external auth returns (bool) {
-		require(_number > reserveLowerLimit, "wrong number");
+		require(_number >= reserveLowerLimit, "wrong number");
 		reserveUpperLimit = _number;
 		return true;
 	}
 
 	function setReserveLowerLimit(uint256 _number) external auth returns (bool) {
-		require(_number < reserveUpperLimit, "wrong number");
+		require(_number <= reserveUpperLimit, "wrong number");
 		reserveLowerLimit = _number;
 		return true;
 	}

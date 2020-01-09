@@ -29,7 +29,7 @@ interface IDispatcher {
 	function getTargetAddress(uint256 _index) external view returns (address);
 
 	// 取得目標比例, 每四位數做分割
-	function getPropotion() external view returns (uint256);
+	function getPropotion() external view returns (uint256[] memory);
 
 	// 取得收益對象地址
 	function getProfitBeneficiary() external view returns (address);
