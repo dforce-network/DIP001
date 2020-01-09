@@ -71,6 +71,19 @@ contract CompoundHandler is ITargetHandler, DSAuth, DSMath {
 		return 0;
 	}
 
+	function drainFunds() external returns (uint256) {
+		require(msg.sender == dispatcher, "sender must be dispatcher");
+		uint256 amount = getBalance();
+		CErc20(targetAddr).redeemUnderlying(amount)
+
+		IERC20(token).transfer(IDispatcher(dispatcher).getFund(), principle);
+		principle = 0;
+
+		uint256 profit = IERC20(token).balanceOf(address(this));
+		IERC20(token).transfer(IDispatcher(dispatcher).getProfitBeneficiary(), profit);
+		return 0;
+	}
+
 	function getBalance() public view returns (uint256) {
 	    uint256 currentBalance = mul(IERC20(targetAddr).balanceOf(address(this)), CErc20(targetAddr).exchangeRateStored());
 	    return currentBalance / (10 ** 18);

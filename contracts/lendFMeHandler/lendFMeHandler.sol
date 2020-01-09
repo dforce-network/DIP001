@@ -43,7 +43,7 @@ contract lendFMeHandler is ITargetHandler, DSAuth, DSMath {
 	}
 
 	function withdraw(uint256 _amounts) external returns (uint256){
-		require(msg.sender == dispatcher, "sender must be owner");
+		require(msg.sender == dispatcher, "sender must be dispatcher");
 		// check the fund in the reserve (contract balance) is enough or not
 		// if not enough, drain from the defi
 		uint256 _tokenBalance = IERC20(token).balanceOf(address(this));
@@ -69,6 +69,19 @@ contract lendFMeHandler is ITargetHandler, DSAuth, DSMath {
 			return 0;
 		}
 		return 1;
+	}
+
+	function drainFunds() external returns (uint256) {
+		require(msg.sender == dispatcher, "sender must be dispatcher");
+		uint256 amount = getBalance();
+		ILendFMe(targetAddr).withdraw(address(token), amount);
+
+		IERC20(token).transfer(IDispatcher(dispatcher).getFund(), principle);
+		principle = 0;
+
+		uint256 profit = IERC20(token).balanceOf(address(this));
+		IERC20(token).transfer(IDispatcher(dispatcher).getProfitBeneficiary(), profit);
+		return 0;
 	}
 
 	function getBalance() external view returns (uint256) {
