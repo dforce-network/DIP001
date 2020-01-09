@@ -1,15 +1,9 @@
 pragma solidity ^0.5.2;
 
 import './DSLibrary/DSAuth.sol';
-
-interface IERC20 {
-    function balanceOf(address _owner) external view returns (uint);
-    function allowance(address _owner, address _spender) external view returns (uint);
-    function transfer(address _to, uint _value) external returns (bool success);
-    function transferFrom(address _from, address _to, uint _value) external returns (bool success);
-    function approve(address _spender, uint _value) external returns (bool success);
-    function totalSupply() external view returns (uint);
-}
+import './interface/ITargetHandler.sol';
+import './interface/IDispatcher.sol';
+import './interface/IERC20.sol';
 
 interface IDeFi {
 	function deposit(uint256 _amounts) external;
@@ -26,12 +20,13 @@ library DSMath {
     }
 }
 
-contract TargetHandler is DSAuth{
+contract TargetHandler is DSAuth, ITargetHandler{
 	using DSMath for uint256;
 
-	address public targetAddr;
-	address public token;
-	uint256 public principle;
+	address targetAddr;
+	address token;
+	address dispatcher;
+	uint256 principle;
 
 	constructor (address _targetAddr, address _token) public {
 		targetAddr = _targetAddr;
@@ -39,17 +34,22 @@ contract TargetHandler is DSAuth{
 		IERC20(token).approve(_targetAddr, uint256(-1));
 	}
 
-	// token deposit
-	function deposit() external {
+	function setDispatcher(address _dispatcher) external auth returns (bool) {
+		dispatcher = _dispatcher;
+		return true;
+	}
+
+	// trigger token deposit
+	function deposit() external returns (uint256) {
 		uint256 amount = IERC20(token).balanceOf(address(this));
 		principle = principle.add(amount);
 		IDeFi(targetAddr).deposit(amount);
+		return 0;
 	}
 
 	// withdraw the token back to this contract
-	// TODO: check sender, must be dispatcher!!
-	function withdraw(uint256 _amounts) external auth {
-		//require(msg.sender == owner, "sender must be owner");
+	function withdraw(uint256 _amounts) external auth returns (uint256) {
+		require(msg.sender == dispatcher, "sender must be dispatcher");
 		// check the fund in the reserve (contract balance) is enough or not
 		// if not enough, drain from the defi
 		uint256 _tokenBalance = IERC20(token).balanceOf(address(this));
@@ -58,13 +58,28 @@ contract TargetHandler is DSAuth{
 		}
 
 		principle = principle.sub(_amounts);
-		require(IERC20(token).transfer(msg.sender, _amounts));
+		IERC20(token).transfer(IDispatcher(dispatcher).getFund(), _amounts);
+		return 0;
 	}
 
-	function withdrawProfit(address _beneficiary) external {
+	function withdrawProfit() external returns (uint256) {
 		uint256 _amount = getProfit();
 		IDeFi(targetAddr).withdraw(_amount);
-		require(IERC20(token).transfer(_beneficiary, _amount));
+		IERC20(token).transfer(IDispatcher(dispatcher).getProfitBeneficiary(), _amount);
+		return 0;
+	}
+
+	function drainFunds() external returns (uint256) {
+		require(msg.sender == dispatcher, "sender must be dispatcher");
+		uint256 amount = getBalance();
+		IDeFi(targetAddr).withdraw(amount);
+
+		// take out principle
+		IERC20(token).transfer(IDispatcher(dispatcher).getFund(), principle);
+
+		uint256 profit = IERC20(token).balanceOf(address(this));
+		IERC20(token).transfer(IDispatcher(dispatcher).getProfitBeneficiary(), profit);
+		return 0;
 	}
 
 	function getBalance() public view returns (uint256) {
@@ -81,5 +96,13 @@ contract TargetHandler is DSAuth{
 
 	function getTargetAddress() public view returns (address) {
 		return targetAddr;
+	}
+
+	function getToken() view external returns (address) {
+		return token;
+	}
+
+	function getDispatcher() view external returns (address) {
+		return dispatcher;
 	}
 }

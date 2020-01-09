@@ -9,10 +9,6 @@ interface IFund {
 	function transferOut(address _tokenID, address _to, uint amount) external returns (bool);
 }
 
-interface DFToken {
-	function getDecimals() external returns (uint256);
-}
-
 library DSMath {
     function add(uint x, uint y) internal pure returns (uint z) {
         require((z = x + y) >= x, "ds-math-add-overflow");
@@ -42,7 +38,7 @@ contract Dispatcher is IDispatcher, DSAuth {
 		uint256 aimedPropotion;
 	}
 
-	constructor (address _tokenAddr, address _fundPool, address[] memory _thAddr, uint256[] memory _thPropotion) public {
+	constructor (address _tokenAddr, address _fundPool, address[] memory _thAddr, uint256[] memory _thPropotion, uint256 _tokenDecimals) public {
 		owner = msg.sender;
 		token = _tokenAddr;
 		fundPool = _fundPool;
@@ -56,7 +52,7 @@ contract Dispatcher is IDispatcher, DSAuth {
 		for(i = 0; i < _thAddr.length; ++i) {
 			ths.push(TargetHandler(_thAddr[i], ITargetHandler(_thAddr[i]).getTargetAddress(), _thPropotion[i]));
 		}
-		executeUnit = (10 ** 18) / 10; //0.1
+		executeUnit = (10 ** _tokenDecimals) / 10; //0.1
 
 		// set up the default limit
 		reserveUpperLimit = 350; // 350 / 1000 = 0.35
@@ -108,8 +104,10 @@ contract Dispatcher is IDispatcher, DSAuth {
 				} else {
 					_amounts -= amountsToTH;
 				}
-				IFund(fundPool).transferOut(token, _th.targetHandlerAddr, amountsToTH);
-				ITargetHandler(_th.targetHandlerAddr).deposit();
+				if(amountsToTH != 0) {
+					IFund(fundPool).transferOut(token, _th.targetHandlerAddr, amountsToTH);
+					ITargetHandler(_th.targetHandlerAddr).deposit();
+				}
 			}
 		}
 	}
@@ -143,6 +141,7 @@ contract Dispatcher is IDispatcher, DSAuth {
 	}
 
 	function withdrawProfit () external auth returns (bool) {
+		require(profitBeneficiary != address(0), "profitBeneficiary not settled.");
 		uint256 i;
 		TargetHandler memory _th;
 		for(i = 0; i < ths.length; ++i) {
@@ -168,19 +167,15 @@ contract Dispatcher is IDispatcher, DSAuth {
 	}
 
 	function getPrinciple() public view returns (uint256 result) {
-		TargetHandler memory _th;
 		result = 0;
 		for(uint256 i = 0; i < ths.length; ++i) {
-			_th = ths[i];
 			result = result.add(getTHPrinciple(i));
 		}
 	}
 
 	function getBalance() public view returns (uint256 result) {
-		TargetHandler memory _th;
 		result = 0;
 		for(uint256 i = 0; i < ths.length; ++i) {
-			_th = ths[i];
 			result = result.add(getTHBalance(i));
 		}
 	}

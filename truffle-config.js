@@ -76,7 +76,7 @@ module.exports = {
       // production: true    // Treats this network as if it was a public net. (default: false)
     // }
   },
-
+  plugins: ["solidity-coverage"],
   // Set default mocha options here, use special reporters etc.
   mocha: {
     // timeout: 100000

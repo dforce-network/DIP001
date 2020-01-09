@@ -4,6 +4,7 @@ var Dispatcher = artifacts.require("Dispatcher")
 var TargetHandler = artifacts.require("TargetHandler")
 var DeFi = artifacts.require("FakeDeFi")
 var DSGuard = artifacts.require("DSGuard")
+var Fund = artifacts.require("usdxSaver")
 
 contract('test', function (accounts) {
 	const admin = accounts[0]
@@ -38,7 +39,7 @@ contract('test', function (accounts) {
 		//console.log("balance of user1: ", await balanceOf(user1))
 		console.log("balance of targetHandler: ", await balanceOf(targetHandler.address))
 		console.log("balance of defi: ", await balanceOf(defi.address))
-		console.log("principle: ", await toEther((await targetHandler.principle.call()).toString()));
+		console.log("principle: ", await toEther((await targetHandler.getPrinciple()).toString()));
 		console.log("balance in DeFi: ", await toEther((await targetHandler.getBalance.call()).toString()));
 		console.log("profit in Defi: ", await toEther((await targetHandler.getProfit.call()).toString()));
 		console.log("-------------------------------------------")
@@ -48,7 +49,7 @@ contract('test', function (accounts) {
 		//console.log("balance of user1: ", await balanceOf(user1))
 		console.log("balance of targetHandler: ", await balanceOf(targetHandler.address))
 		console.log("balance of defi: ", await balanceOf(defi.address))
-		console.log("principle: ", await toEther((await targetHandler.principle.call()).toString()));
+		console.log("principle: ", await toEther((await targetHandler.getPrinciple()).toString()));
 		console.log("balance in DeFi: ", await toEther((await targetHandler.getBalance.call()).toString()));
 		console.log("profit in Defi: ", await toEther((await targetHandler.getProfit.call()).toString()));
 		console.log("-------------------------------------------")
@@ -59,7 +60,7 @@ contract('test', function (accounts) {
 		//console.log("balance of user1: ", await balanceOf(user1))
 		console.log("balance of targetHandler: ", await balanceOf(targetHandler.address))
 		console.log("balance of defi: ", await balanceOf(defi.address))
-		console.log("principle: ", await toEther((await targetHandler.principle.call()).toString()));
+		console.log("principle: ", await toEther((await targetHandler.getPrinciple()).toString()));
 		console.log("balance in DeFi: ", await toEther((await targetHandler.getBalance.call()).toString()));
 		console.log("profit in Defi: ", await toEther((await targetHandler.getProfit.call()).toString()));
 		console.log("-------------------------------------------")
@@ -68,8 +69,7 @@ contract('test', function (accounts) {
 	it("Dispatcher", async function () {
 		let tx
 		let token = await DSToken.new("0x444600000000000000000000000000")
-		tx = await token.mint(user1, await web3.utils.toWei("1000000", "ether"))
-		tx = await token.mint(user2, await web3.utils.toWei("1000000", "ether"))
+		let fund = await Fund.new(token.address)
 
 		const balanceOf = async function (address) {
 			return await toEther(await token.balanceOf(address))
@@ -93,12 +93,7 @@ contract('test', function (accounts) {
 		}
 
 		const showAimedPropotion = async function () {
-			let targetInfo = await dispatcher.ths.call(0)
-			console.log("\ttargetHandler 1 aimedPropotion: ", targetInfo.aimedPropotion.toNumber() / 1000)
-
-			targetInfo = await dispatcher.ths.call(1)
-			console.log("\ttargetHandler 2 aimedPropotion: ", targetInfo.aimedPropotion.toNumber() / 1000)
-			console.log("")
+			console.log("\taimedPropotion: ", (await dispatcher.getPropotion()))	
 		}
 
 		const showCurrentPropotion = async function () {
@@ -117,8 +112,11 @@ contract('test', function (accounts) {
 
 		let targetAddress = [targetHandler_1.address, targetHandler_2.address]
 		let targetPercentage = [200, 800]
-		let dispatcher = await Dispatcher.new(token.address, targetAddress, targetPercentage)
+		let dispatcher = await Dispatcher.new(token.address, fund.address, targetAddress, targetPercentage)
 		let dsGuard = await DSGuard.new()
+
+		tx = await targetHandler_1.setDispatcher(dispatcher.address);
+		tx = await targetHandler_2.setDispatcher(dispatcher.address);
 
 		// set authority
 		tx = await dispatcher.setAuthority(dsGuard.address, { from: admin })
@@ -140,34 +138,36 @@ contract('test', function (accounts) {
 
 		console.log("-------------------------------------------")
 		console.log("initial infornation")
-		console.log("reserve ratio max: ", (await dispatcher.reserveUpperLimit.call()).toNumber() / 1000)
-		console.log("reserve ratio min: ", (await dispatcher.reserveLowerLimit.call()).toNumber() / 1000)
-		let targetInfo = await dispatcher.ths.call(0)
-		console.log("\ttarget 1 info: ")
-		console.log("\t\taddress: ", targetInfo.targetHandlerAddr)
-		console.log("\t\tpercentage: ", targetInfo.aimedPropotion.toString())
-
-		targetInfo = await dispatcher.ths.call(1)
-		console.log("\ttarget 2 info: ")
-		console.log("\t\taddress: ", targetInfo.targetHandlerAddr)
-		console.log("\t\tpercentage: ", targetInfo.aimedPropotion.toString())
+		console.log("reserve ratio max: ", (await dispatcher.getReserveUpperLimit()).toNumber() / 1000)
+		console.log("reserve ratio min: ", (await dispatcher.getReserveLowerLimit()).toNumber() / 1000)	
+		console.log("\ttarget 1 address: ", (await dispatcher.getTargetAddress(0)))
+		console.log("\ttarget 2 address: ", (await dispatcher.getTargetAddress(1)))
+		console.log("\t\tpercentage: ", await dispatcher.getPropotion().toString())
 		console.log("")
 
 		await showResult()
 
-		// deopsit 10 tokens to dispatcher, should dispatch 2 to th1, 8 to th2
+		// deopsit 10 tokens to fund, should dispatch 2 to th1, 8 to th2
 		// should reserve 3.5, and dispatch 6.5 / 5 = 1.3 to th1, 5.2 to th2
 		console.log("-------------------------------------------")
 		console.log("infornation after deposit 10 tokens")
-		tx = await token.transfer(dispatcher.address, await ether("10"), { from: user2 })
+		tx = await token.mint(fund.address, await ether("10"))
 		tx = await dispatcher.trigger()
 		console.log(tx.receipt.gasUSed)
 		await showResult()
 
 		console.log("-------------------------------------------")
+		console.log("infornation after withdraw 3 tokens")
+		tx = await fund.withdraw(await ether("3"))
+		tx = await dispatcher.trigger()
+		console.log(tx.receipt.gasUSed)
+		await showResult()		
+
+		console.log("-------------------------------------------")
 		console.log("information after defi_1 get 10% profit and difi_2 get two 10% profit")
-		tx = await token.transfer(defi_1.address, await ether("1000"), { from: user2 })
-		tx = await token.transfer(defi_2.address, await ether("1000"), { from: user2 })
+
+		tx = await token.mint(defi_1.address, await ether("1000"))
+		tx = await token.mint(defi_2.address, await ether("1000"))
 		tx = await defi_1.makeProfitToUser(targetHandler_1.address)
 		tx = await defi_2.makeProfitToUser(targetHandler_2.address)
 		tx = await defi_2.makeProfitToUser(targetHandler_2.address)
@@ -175,7 +175,8 @@ contract('test', function (accounts) {
 
 		console.log("-------------------------------------------")
 		console.log("deposit 10 more tokens")
-		tx = await token.transfer(dispatcher.address, await ether("10"), { from: user2 })
+
+		tx = await token.mint(fund.address, await ether("10"))
 		tx = await dispatcher.trigger()
 		console.log(tx.receipt.gasUSed)
 		await showResult()
@@ -211,22 +212,27 @@ contract('test', function (accounts) {
 
 		console.log("-------------------------------------------")
 		console.log("deposit 10 more tokens")
-		tx = await token.transfer(dispatcher.address, await ether("10"), { from: user2 })
+
+		tx = await token.mint(fund.address, await ether("10"))
 		tx = await dispatcher.trigger()
 		console.log(tx.receipt.gasUSed)
 		await showResult()
 
 		console.log("-------------------------------------------")
 		console.log("deposit 50 more tokens")
-		tx = await token.transfer(dispatcher.address, await ether("50"), { from: user2 })
+
+		tx = await token.mint(fund.address, await ether("50"))
+
 		tx = await dispatcher.trigger()
 		console.log(tx.receipt.gasUSed)
 		await showResult()
 
 		console.log("-------------------------------------------")
 		console.log("defi get profit")
-		tx = await token.transfer(defi_1.address, await ether("1000"), { from: user2 })
-		tx = await token.transfer(defi_2.address, await ether("1000"), { from: user2 })
+
+		tx = await token.mint(defi_1.address, await ether("1000"))
+		tx = await token.mint(defi_2.address, await ether("1000"))
+
 		tx = await defi_1.makeProfitToUser(targetHandler_1.address)
 		tx = await defi_2.makeProfitToUser(targetHandler_2.address)
 		tx = await defi_2.makeProfitToUser(targetHandler_2.address)
@@ -234,7 +240,7 @@ contract('test', function (accounts) {
 
 		console.log("-------------------------------------------")
 		console.log("withdraw profit")
-		tx = await dispatcher.withdrawProfit();
+		tx = await dispatcher.withdrawProfit({from: admin});
 		await showResult()
 
 		console.log("-------------------------------------------")
