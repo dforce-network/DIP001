@@ -151,6 +151,13 @@ contract Dispatcher is IDispatcher, DSAuth {
 		return true;
 	}
 
+	function drainFunds (uint256 _index) external auth returns (bool) {
+		require(profitBeneficiary != address(0), "profitBeneficiary not settled.");
+		TargetHandler memory _th = ths[_index];
+		ITargetHandler(_th.targetHandlerAddr).drainFunds();
+		return true;
+	}
+
 	// getter function
 	function getReserve() public view returns (uint256) {
 		return IERC20(token).balanceOf(fundPool);
