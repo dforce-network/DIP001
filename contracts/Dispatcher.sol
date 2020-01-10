@@ -191,11 +191,6 @@ contract Dispatcher is IDispatcher, DSAuth {
 		return getBalance().sub(getPrinciple());
 	}
 
-	function getTHData(uint256 _index) external view returns (uint256, uint256, uint256, uint256) {
-		address _mmAddr = ths[_index].targetAddr;
-		return (getPrinciple(), getBalance(), getProfit(), IERC20(token).balanceOf(_mmAddr));
-	}
-
 	function getTHPrinciple(uint256 _index) public view returns (uint256) {
 		return ITargetHandler(ths[_index].targetHandlerAddr).getPrinciple();
 	}
@@ -206,6 +201,11 @@ contract Dispatcher is IDispatcher, DSAuth {
 
 	function getTHProfit(uint256 _index) public view returns (uint256) {
 		return ITargetHandler(ths[_index].targetHandlerAddr).getProfit();
+	}
+
+	function getTHData(uint256 _index) external view returns (uint256, uint256, uint256, uint256) {
+		address _mmAddr = ths[_index].targetAddr;
+		return (getTHPrinciple(_index), getTHBalance(_index), getTHProfit(_index), IERC20(token).balanceOf(_mmAddr));
 	}
 
 	function getFund() external view returns (address) {
