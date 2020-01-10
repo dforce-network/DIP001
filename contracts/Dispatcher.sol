@@ -106,7 +106,7 @@ contract Dispatcher is IDispatcher, DSAuth {
 				}
 				if(amountsToTH != 0) {
 					IFund(fundPool).transferOut(token, _th.targetHandlerAddr, amountsToTH);
-					ITargetHandler(_th.targetHandlerAddr).deposit();
+					ITargetHandler(_th.targetHandlerAddr).deposit(amountsToTH);
 				}
 			}
 		}
@@ -230,7 +230,7 @@ contract Dispatcher is IDispatcher, DSAuth {
 	function getPropotion() external view returns (uint256[] memory) {
 		uint256 length = ths.length;
 		TargetHandler memory _th;
-		uint256[] memory result;
+		uint256[] memory result = new uint256[](length);
 		for (uint256 i = 0; i < length; ++i) {
 			_th = ths[i];
 			result[i] = _th.aimedPropotion;
