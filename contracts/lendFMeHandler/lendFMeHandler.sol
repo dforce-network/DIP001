@@ -28,7 +28,7 @@ contract lendFMeHandler is ITargetHandler, DSAuth, DSMath {
 	}
 
 
-	function setDispatcher(address _dispatcher) public {
+	function setDispatcher(address _dispatcher) external auth {
 		dispatcher = _dispatcher;
 	}
 

@@ -25,7 +25,7 @@ contract CompoundHandler is ITargetHandler, DSAuth, DSMath {
 		IERC20(token).approve(_targetAddr, uint256(-1));
 	}
 
-	function setDispatcher (address _dispatcher) public onlyOwner {
+	function setDispatcher (address _dispatcher) external auth {
 		dispatcher = _dispatcher;
 	}
 
