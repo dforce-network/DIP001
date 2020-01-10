@@ -294,7 +294,7 @@ contract Dispatcher is IDispatcher, DSAuth {
 		require(length != 1, "can not remove the last target handler");
 		require(_index < length, "not the correct index");
 		require(ths[_index].targetHandlerAddr == _targetHandlerAddr, "not the correct index or address");
-		require(getTHBalance(_index) == 0, "must drain all balance in the target handler");
+		require(getTHPrinciple(_index) == 0, "must drain all balance in the target handler");
 		ths[_index] = ths[length - 1];
 		ths.length --;
 		return true;
