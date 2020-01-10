@@ -19,6 +19,9 @@ interface IDispatcher {
 	function getToken() external view returns (address);
 	function getFund() external view returns (address);
 
+	function getTHStructures() external view returns (uint256[] memory, address[] memory, address[] memory);
+	function getTHData(uint256 _index) external view returns (uint256, uint256, uint256, uint256);
+
 	// 取得 target handler 數量
 	function getTHCount() external view returns (uint256);
 
