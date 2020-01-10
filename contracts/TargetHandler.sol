@@ -76,6 +76,7 @@ contract TargetHandler is DSAuth, ITargetHandler{
 
 		// take out principle
 		IERC20(token).transfer(IDispatcher(dispatcher).getFund(), principle);
+		principle = 0;
 
 		uint256 profit = IERC20(token).balanceOf(address(this));
 		IERC20(token).transfer(IDispatcher(dispatcher).getProfitBeneficiary(), profit);

@@ -63,13 +63,18 @@ contract lendFMeHandler is ITargetHandler, DSAuth, DSMath {
 
 	function drainFunds() external auth returns (uint256) {
 		uint256 amount = getBalance();
-		ILendFMe(targetAddr).withdraw(address(token), amount);
-
-		IERC20(token).transfer(IDispatcher(dispatcher).getFund(), principle);
-		principle = 0;
-
+		if(amount > 0) {
+			ILendFMe(targetAddr).withdraw(address(token), amount);
+			if(principle > 0){
+				IERC20(token).transfer(IDispatcher(dispatcher).getFund(), principle);
+				principle = 0;
+			}	
+		}
+	
 		uint256 profit = IERC20(token).balanceOf(address(this));
-		IERC20(token).transfer(IDispatcher(dispatcher).getProfitBeneficiary(), profit);
+		if(profit > 0) {
+			IERC20(token).transfer(IDispatcher(dispatcher).getProfitBeneficiary(), profit);
+		}
 		return 0;
 	}
 
