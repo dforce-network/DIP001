@@ -94,6 +94,7 @@ contract Dispatcher is IDispatcher, DSAuth {
 			amountsToTH = 0;
 			thCurrentBalance = getTHPrinciple(i);
 			amountsToSatisfiedAimedPropotion = totalPrincipleAfterDeposit.mul(_th.aimedPropotion) / 1000;
+			amountsToSatisfiedAimedPropotion = amountsToSatisfiedAimedPropotion / executeUnit * executeUnit;
 			if (thCurrentBalance > amountsToSatisfiedAimedPropotion) {
 				continue;
 			} else {
