@@ -89,10 +89,13 @@ contract lendFMeHandler is ITargetHandler, DSAuth, DSMath {
 	function getProfit() public view returns (uint256) {
 	    uint256 _balance = getBalance();
 	    uint256 _principle = getPrinciple();
+	    uint256 _unit = IDispatcher(targetAddr).getExecuteUnit();
 	    if (_balance < _principle) {
 	        return 0;
 	    } else {
-	        return sub(_balance, _principle);
+	    	uint256 _amounts = sub(_balance, _principle);
+	    	_amounts = _amounts / _unit * _unit;
+	        return _amounts;
 	    }
 	}
 
