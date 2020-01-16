@@ -35,8 +35,8 @@ contract lendFMeHandler is ITargetHandler, DSAuth, DSMath {
 	// token deposit
 	function deposit(uint256 _amounts) external auth returns (uint256) {
 		if (IERC20(token).balanceOf(address(this)) >= _amounts) {
-			principle = add(principle, _amounts);
 			if(ILendFMe(targetAddr).supply(address(token), _amounts) == 0) {
+				principle = add(principle, _amounts);
 				return 0;
 			}
 		}
@@ -47,8 +47,8 @@ contract lendFMeHandler is ITargetHandler, DSAuth, DSMath {
 		if(_amounts != 0 && ILendFMe(targetAddr).withdraw(address(token), _amounts) != 0) {
 			return 1;
 		}
-		principle = sub(principle, _amounts);
 		IERC20(token).transfer(IDispatcher(dispatcher).getFund(), _amounts);
+		principle = sub(principle, _amounts);
 		return 0;
 	}
 
@@ -89,7 +89,7 @@ contract lendFMeHandler is ITargetHandler, DSAuth, DSMath {
 	function getProfit() public view returns (uint256) {
 	    uint256 _balance = getBalance();
 	    uint256 _principle = getPrinciple();
-	    uint256 _unit = IDispatcher(targetAddr).getExecuteUnit();
+	    uint256 _unit = IDispatcher(dispatcher).getExecuteUnit();
 	    if (_balance < _principle) {
 	        return 0;
 	    } else {

@@ -124,7 +124,7 @@ contract Dispatcher is IDispatcher, DSAuth {
 		for(i = 0; i < ths.length; ++i) {
 			_th = ths[i];
 			amountsFromTH = 0;
-			thCurrentBalance = getTHBalance(i);
+			thCurrentBalance = getTHPrinciple(i);
 			amountsToSatisfiedAimedPropotion = totalBalanceAfterWithdraw.mul(_th.aimedPropotion) / 1000;
 			if (thCurrentBalance < amountsToSatisfiedAimedPropotion) {
 				continue;
