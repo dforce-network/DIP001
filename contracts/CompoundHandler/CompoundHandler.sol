@@ -68,13 +68,13 @@ contract CompoundHandler is ITargetHandler, DSAuth, DSMath {
 			if (principle > 0) {
 				IERC20(token).transfer(IDispatcher(dispatcher).getFund(), principle);
 				principle = 0;
-			}	
+			}
 		}
 
 		uint256 profit = IERC20(token).balanceOf(address(this));
 		if(profit > 0) {
 			IERC20(token).transfer(IDispatcher(dispatcher).getProfitBeneficiary(), profit);
-		}		
+		}
 		return 0;
 	}
 

@@ -13,7 +13,7 @@ interface ILendFMe {
 }
 
 contract lendFMeHandler is ITargetHandler, DSAuth, DSMath {
-    
+
     event WithdrawFailed(uint256 _amounts);
 
 	address targetAddr;
@@ -68,9 +68,9 @@ contract lendFMeHandler is ITargetHandler, DSAuth, DSMath {
 			if(principle > 0){
 				IERC20(token).transfer(IDispatcher(dispatcher).getFund(), principle);
 				principle = 0;
-			}	
+			}
 		}
-	
+
 		uint256 profit = IERC20(token).balanceOf(address(this));
 		if(profit > 0) {
 			IERC20(token).transfer(IDispatcher(dispatcher).getProfitBeneficiary(), profit);
