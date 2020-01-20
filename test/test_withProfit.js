@@ -25,7 +25,7 @@ contract('procedure with profit growing', function (accounts) {
 
 	it("Dispatcher", async function () {
 		let tx
-		let token = await DSToken.new("0x444600000000000000000000000000", 18)
+		let token = await DSToken.new("0x444600000000000000000000000000")
 		let fund = await Fund.new(token.address)
 
 		const balanceOf = async function (address) {
@@ -135,8 +135,9 @@ contract('procedure with profit growing', function (accounts) {
 		await showResult("set target ratio and trigger")
 
 		// 6. add second target handler (compound handler)
+		tx = await dispatcher.addTargetHandler(compoundHandler_1.address)
 		targetPercentage = [700, 300]
-		tx = await dispatcher.addTargetHandler(compoundHandler_1.address, targetPercentage)
+		tx = await dispatcher.setAimedPropotion(targetPercentage)
 		await showResult("add new target handler, 70:30")
 
 		// 7. trigger
@@ -150,8 +151,7 @@ contract('procedure with profit growing', function (accounts) {
 
 		// remove compund handler, should fail
 		try {
-			targetPercentage = [1000]
-			await dispatcher.removeTargetHandler(compoundHandler_1.address, 1, targetPercentage, { from: admin })
+			await dispatcher.removeTargetHandler(compoundHandler_1.address, 1, { from: admin })
 			assert.fail('Expected revert not received');
 		} catch (error) {
 			const revertFound = error.message.search('revert') >= 0;
@@ -164,8 +164,9 @@ contract('procedure with profit growing', function (accounts) {
 		await showResult("drain compound handler ")
 
 		// 10. remove compound handler
+		tx = await dispatcher.removeTargetHandler(compoundHandler_1.address, 1, { from: admin })
 		targetPercentage = [1000]
-		tx = await dispatcher.removeTargetHandler(compoundHandler_1.address, 1, targetPercentage, { from: admin })
+		tx = await dispatcher.setAimedPropotion(targetPercentage, { from: admin})
 		await showResult("remove compound handler ")
 
 		// 11. withdraw 6000
@@ -173,8 +174,9 @@ contract('procedure with profit growing', function (accounts) {
 		await showResult("withdraw 6000")
 
 		// 12. add compound handler
+		tx = await dispatcher.addTargetHandler(compoundHandler_1.address)
 		targetPercentage = [700, 300]
-		tx = await dispatcher.addTargetHandler(compoundHandler_1.address, targetPercentage)
+		tx = await dispatcher.setAimedPropotion(targetPercentage, { from: admin})
 		await showResult("add handler")
 
 		// 13. add 10000 to reserve, and trigger
@@ -193,56 +195,83 @@ contract('procedure with profit growing', function (accounts) {
 		tx = await dispatcher.trigger()
 		await showResult("trigger")
 
-		// 17. add handler 3
+		tx = await dispatcher.addTargetHandler(lendFMeHandler_2.address)
 		targetPercentage = [400, 500, 100]
-		tx = await dispatcher.addTargetHandler(lendFMeHandler_2.address, targetPercentage)
+		tx = await dispatcher.setAimedPropotion(targetPercentage, { from: admin})
 
-		// 18. add 5000
+		// 17. add 5000
 		tx = await token.mint(fund.address, (await ether("5000")))
 		await showResult("add 5000 to pool")
 
-		// 19. trigger
+		// 18. trigger
 		tx = await dispatcher.trigger()
 		await showResult("trigger")
 
-		// 20. add 10000
+		// 19. add 10000
 		tx = await token.mint(fund.address, (await ether("10000")))
 		await showResult("add 10000 to pool")
 
-		// 21. trigger
+		// 20. trigger
 		tx = await dispatcher.trigger()
 		await showResult("trigger")
 
 		// remove handler 3, should fail
 		try {
-			targetPercentage = [500, 500]
-			await dispatcher.removeTargetHandler(lendFMeHandler_2.address, 2, targetPercentage, { from: admin })
+			await dispatcher.removeTargetHandler(lendFMeHandler_2.address, 2, { from: admin })
 			assert.fail('Expected revert not received');
 		} catch (error) {
 			const revertFound = error.message.search('revert') >= 0;
 			assert(revertFound, `Expected "revert", got ${error} instead`)
 		}
 
-		// 22. drain handler3
+		// 21. drain handler3
 		tx = await dispatcher.drainFunds(2)
 		await showResult("drain handler 3")
 
-		// 23. remove handler3
-		targetPercentage = [500, 500]
-		tx = await dispatcher.removeTargetHandler(lendFMeHandler_2.address, 2, targetPercentage, { from: admin })
+		// 22. remove handler3
+		tx = await dispatcher.removeTargetHandler(lendFMeHandler_2.address, 2, { from: admin })
+		// targetPercentage = [500]
+		// tx = await dispatcher.setAimedPropotion(targetPercentage, { from: admin})
 		await showResult("remove handler 3")
 
-		// 24. drain compound handler
+		// 23. drain compound handler
 		tx = await dispatcher.drainFunds(1)
 		await showResult("drain handler 2 (compound)")
 
-		// 23. remove handler3
-		targetPercentage = [1000]
-		tx = await dispatcher.removeTargetHandler(compoundHandler_1.address, 1, targetPercentage, { from: admin })
-		await showResult("remove handler 3 (compound)")
+		// 24. remove handler2
+		tx = await dispatcher.removeTargetHandler(compoundHandler_1.address, 1, { from: admin })
+		// targetPercentage = [1000]
+		// tx = await dispatcher.setAimedPropotion(targetPercentage, { from: admin})
+		await showResult("remove handler 2 (compound)")
 
+		// 25. trigger
+		tx = await dispatcher.trigger()
+		await showResult("trigger")
 
+		// 26. add compound handler
+		tx = await dispatcher.addTargetHandler(compoundHandler_1.address)
+		targetPercentage = [700, 300]
+		tx = await dispatcher.setAimedPropotion(targetPercentage)
+		await showResult("add compound handler, 70:30")
 
+		// 27. trigger
+		tx = await dispatcher.trigger()
+		await showResult("trigger")
+
+		// 28. withdraw profit
+		tx = await dispatcher.withdrawProfit()
+		await showResult("withdraw profit")
+
+		// 29. update setting
+		tx = await dispatcher.setReserveUpperLimit(800)
+		tx = await dispatcher.setReserveLowerLimit(750)
+		targetPercentage = [300, 700]
+		tx = await dispatcher.setAimedPropotion(targetPercentage)
+		await showResult("update setting: reserve 75%~80%, handler 3:7")
+
+		// 30. trigger
+		tx = await dispatcher.trigger()
+		await showResult("trigger")
 	});
 });
 
