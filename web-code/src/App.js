@@ -38,6 +38,7 @@ export default class App extends React.Component {
     super(props);
 
     this.state = {
+      decimals_num: 6,
       decimals: {
         USDC: 6,
         PAX: 18,
@@ -153,13 +154,13 @@ export default class App extends React.Component {
 
     if (key === 1) {
       token_address = '0x4DBCdF9B62e891a7cec5A2568C3F4FAF9E8Abe2b'; // USDC
-      // address_Dispatcher = '0x2F4A79A56fc43fe3C4E8Ee796f8D4851DeF928FD';
+      this.setState({ decimals_num: 6 });
     } else if (key === 2) {
       token_address = '0x722E6238335d89393A42e2cA316A5fb1b8B2EB55'; // PAX
-      // address_Dispatcher = '0x810736693b0959dd0f70c6290c318ad6c6e8cdc3';
+      this.setState({ decimals_num: 18 });
     } else if (key === 3) {
       token_address = '0xe72a3181f69Eb21A19bd4Ce19Eb68FDb333d74c6'; // TUSD
-      // address_Dispatcher = '0x810736693b0959dd0f70c6290c318ad6c6e8cdc3';
+      this.setState({ decimals_num: 18 });
     }
 
     let DispatcherEntrance = new this.new_web3.eth.Contract(DispatcherEntranceABI, this.address_DispatcherEntrance);
@@ -1295,14 +1296,14 @@ export default class App extends React.Component {
                 <div className='dispatcher-right-balance'>
                   {
                     this.state.my_balance ?
-                      format_str_to_K(format_balance(this.state.my_balance, this.state.decimals.USDC, 2)) : '···'
+                      format_str_to_K(format_balance(this.state.my_balance, this.state.decimals_num, 2)) : '···'
                   }
                 </div>
               </div>
             </div>
             <div className='content-wrap'>
               <div className="dispatcher-content">
-                <Tabs onChange={(e) => { this.callback(e) }} type="card" size='large'>
+                <Tabs onChange={(e) => { this.callback(e) }} type="card">
                   <Tabs.TabPane tab="USDC" key="1">
                     <div className='content-top'>
                       <div className='content-top-left'>
@@ -1321,7 +1322,7 @@ export default class App extends React.Component {
                       <div className='content-top-right'>
                         <span className='gross-title'>Gross Amount</span>
                         <span className='gross-num'>
-                          {this.state.Gross_Amount ? format_str_to_K(format_balance(this.state.Gross_Amount, this.state.decimals.USDC, 2)) : '···'}
+                          {this.state.Gross_Amount ? format_str_to_K(format_balance(this.state.Gross_Amount, this.state.decimals_num, 2)) : '···'}
                         </span>
                       </div>
                     </div>
@@ -1344,7 +1345,7 @@ export default class App extends React.Component {
                         <div className='item'>
                           <div className='item-title'>Pool Reserve</div>
                           <div className='item-num'>
-                            {this.state.Pool_Reserve ? format_str_to_K(format_balance(this.state.Pool_Reserve, this.state.decimals.USDC, 2)) : '···'}
+                            {this.state.Pool_Reserve ? format_str_to_K(format_balance(this.state.Pool_Reserve, this.state.decimals_num, 2)) : '···'}
                           </div>
                         </div>
                         <div className='item'>
@@ -1380,7 +1381,7 @@ export default class App extends React.Component {
                         <div className='item'>
                           <div className='item-title'>Total Principle</div>
                           <div className='item-num'>
-                            {this.state.Total_Principle ? format_str_to_K(format_balance(this.state.Total_Principle, this.state.decimals.USDC, 2)) : '···'}
+                            {this.state.Total_Principle ? format_str_to_K(format_balance(this.state.Total_Principle, this.state.decimals_num, 2)) : '···'}
                           </div>
                         </div>
                       </div>
@@ -1419,7 +1420,7 @@ export default class App extends React.Component {
                       <div className='content-top-right'>
                         <span className='gross-title'>Gross Amount</span>
                         <span className='gross-num'>
-                          {this.state.Gross_Amount ? format_str_to_K(format_balance(this.state.Gross_Amount, this.state.decimals.PAX, 2)) : '···'}
+                          {this.state.Gross_Amount ? format_str_to_K(format_balance(this.state.Gross_Amount, this.state.decimals_num, 2)) : '···'}
                         </span>
                       </div>
                     </div>
@@ -1442,7 +1443,7 @@ export default class App extends React.Component {
                         <div className='item'>
                           <div className='item-title'>Pool Reserve</div>
                           <div className='item-num'>
-                            {this.state.Pool_Reserve ? format_str_to_K(format_balance(this.state.Pool_Reserve, this.state.decimals.PAX, 2)) : '···'}
+                            {this.state.Pool_Reserve ? format_str_to_K(format_balance(this.state.Pool_Reserve, this.state.decimals_num, 2)) : '···'}
                           </div>
                         </div>
                         <div className='item'>
@@ -1478,7 +1479,7 @@ export default class App extends React.Component {
                         <div className='item'>
                           <div className='item-title'>Total Principle</div>
                           <div className='item-num'>
-                            {this.state.Total_Principle ? format_str_to_K(format_balance(this.state.Total_Principle, this.state.decimals.PAX, 2)) : '···'}
+                            {this.state.Total_Principle ? format_str_to_K(format_balance(this.state.Total_Principle, this.state.decimals_num, 2)) : '···'}
                           </div>
                         </div>
                       </div>
@@ -1517,7 +1518,7 @@ export default class App extends React.Component {
                       <div className='content-top-right'>
                         <span className='gross-title'>Gross Amount</span>
                         <span className='gross-num'>
-                          {this.state.Gross_Amount ? format_str_to_K(format_balance(this.state.Gross_Amount, this.state.decimals.PAX, 2)) : '···'}
+                          {this.state.Gross_Amount ? format_str_to_K(format_balance(this.state.Gross_Amount, this.state.decimals_num, 2)) : '···'}
                         </span>
                       </div>
                     </div>
@@ -1540,7 +1541,7 @@ export default class App extends React.Component {
                         <div className='item'>
                           <div className='item-title'>Pool Reserve</div>
                           <div className='item-num'>
-                            {this.state.Pool_Reserve ? format_str_to_K(format_balance(this.state.Pool_Reserve, this.state.decimals.PAX, 2)) : '···'}
+                            {this.state.Pool_Reserve ? format_str_to_K(format_balance(this.state.Pool_Reserve, this.state.decimals_num, 2)) : '···'}
                           </div>
                         </div>
                         <div className='item'>
@@ -1576,7 +1577,7 @@ export default class App extends React.Component {
                         <div className='item'>
                           <div className='item-title'>Total Principle</div>
                           <div className='item-num'>
-                            {this.state.Total_Principle ? format_str_to_K(format_balance(this.state.Total_Principle, this.state.decimals.PAX, 2)) : '···'}
+                            {this.state.Total_Principle ? format_str_to_K(format_balance(this.state.Total_Principle, this.state.decimals_num, 2)) : '···'}
                           </div>
                         </div>
                       </div>
