@@ -294,25 +294,54 @@ contract Dispatcher is IDispatcher, DSAuth {
 		return true;
 	}
 
-	function removeTargetHandler(address _targetHandlerAddr, uint256 _index) external auth returns (bool) {
+	function removeTargetHandler(address _targetHandlerAddr, uint256 _index, uint256[] calldata _thPropotion) external auth returns (bool) {
 		uint256 length = ths.length;
-		require(length != 1, "can not remove the last target handler");
+		uint256 sum = 0;
+		uint256 i;
+		TargetHandler memory _th;
+
+		require(length > 1, "can not remove the last target handler");
 		require(_index < length, "not the correct index");
 		require(ths[_index].targetHandlerAddr == _targetHandlerAddr, "not the correct index or address");
 		require(getTHPrinciple(_index) == 0, "must drain all balance in the target handler");
 		ths[_index] = ths[length - 1];
 		ths.length --;
+
+		require(ths.length == _thPropotion.length, "wrong length");
+		for(i = 0; i < _thPropotion.length; ++i) {
+			sum += _thPropotion[i];
+		}
+		require(sum == 1000, "the sum of propotion must be 1000");
+		for(i = 0; i < _thPropotion.length; ++i) {
+			_th = ths[i];
+			_th.aimedPropotion = _thPropotion[i];
+			ths[i] = _th;
+		}
 		return true;
 	}
 
-	function addTargetHandler(address _targetHandlerAddr) external auth returns (bool) {
+	function addTargetHandler(address _targetHandlerAddr, uint256[] calldata _thPropotion) external auth returns (bool) {
 		uint256 length = ths.length;
+		uint256 sum = 0;
+		uint256 i;
 		TargetHandler memory _th;
-		for(uint256 i = 0; i < length; ++i) {
+
+		for(i = 0; i < length; ++i) {
 			_th = ths[i];
 			require(_th.targetHandlerAddr != _targetHandlerAddr, "exist target handler");
 		}
 		ths.push(TargetHandler(_targetHandlerAddr, ITargetHandler(_targetHandlerAddr).getTargetAddress(), 0));
+
+		require(ths.length == _thPropotion.length, "wrong length");
+		for(i = 0; i < _thPropotion.length; ++i) {
+			sum += _thPropotion[i];
+		}
+		require(sum == 1000, "the sum of propotion must be 1000");
+		for(i = 0; i < _thPropotion.length; ++i) {
+			_th = ths[i];
+			_th.aimedPropotion = _thPropotion[i];
+			ths[i] = _th;
+		}
 		return true;
 	}
 

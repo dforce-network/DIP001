@@ -46,10 +46,10 @@ interface IDispatcher {
 	// 取得執行最小單位
 	function getExecuteUnit() external view returns (uint256);
 
-	// governmence function 
+	// Governmence Functions
 	function setAimedPropotion(uint256[] calldata _thPropotion) external returns (bool);
-	function addTargetHandler(address _targetHandlerAddr) external returns (bool);
-	function removeTargetHandler(address _targetHandlerAddr, uint256 _index) external returns (bool);
+	function addTargetHandler(address _targetHandlerAddr, uint256[] calldata _thPropotion) external returns (bool);
+	function removeTargetHandler(address _targetHandlerAddr, uint256 _index, uint256[] calldata _thPropotion) external returns (bool);
 	function setProfitBeneficiary(address _profitBeneficiary) external returns (bool);
 	function setReserveLowerLimit(uint256 _number) external returns (bool);
 	function setReserveUpperLimit(uint256 _number) external returns (bool);
