@@ -70,15 +70,17 @@ contract Dispatcher is IDispatcher, DSAuth {
 			amounts = amounts / executeUnit * executeUnit;
 			if (amounts != 0) {
 				internalDeposit(amounts);
+				return true;
 			}
 		} else if (reserve < reserveMin) {
 			amounts = reserveMin - reserve;
 			amounts = amounts / executeUnit * executeUnit;
 			if (amounts != 0) {
 				withdrawPrinciple(amounts);
+				return true;
 			}
 		}
-		return true;
+		return false;
 	}
 
 	function internalDeposit (uint256 _amount) internal {
