@@ -68,14 +68,14 @@ contract Dispatcher is IDispatcher, DSAuth {
 		if (reserve > reserveMax) {
 			amounts = reserve - reserveMax;
 			amounts = amounts / executeUnit * executeUnit;
-			if (amounts != 0) {
+			if (amounts > 0) {
 				internalDeposit(amounts);
 				return true;
 			}
 		} else if (reserve < reserveMin) {
 			amounts = reserveMin - reserve;
 			amounts = amounts / executeUnit * executeUnit;
-			if (amounts != 0) {
+			if (amounts > 0) {
 				withdrawPrinciple(amounts);
 				return true;
 			}
@@ -107,7 +107,7 @@ contract Dispatcher is IDispatcher, DSAuth {
 				} else {
 					_amounts -= amountsToTH;
 				}
-				if(amountsToTH != 0) {
+				if(amountsToTH > 0) {
 					IFund(fundPool).transferOut(token, _th.targetHandlerAddr, amountsToTH);
 					ITargetHandler(_th.targetHandlerAddr).deposit(amountsToTH);
 				}
@@ -138,7 +138,9 @@ contract Dispatcher is IDispatcher, DSAuth {
 				} else {
 					_amounts -= amountsFromTH;
 				}
-				ITargetHandler(_th.targetHandlerAddr).withdraw(amountsFromTH);
+				if (amountsFromTH > 0) {
+					ITargetHandler(_th.targetHandlerAddr).withdraw(amountsFromTH);
+				}
 			}
 		}
 	}
