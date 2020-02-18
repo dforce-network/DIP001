@@ -7,8 +7,10 @@ import '../interface/IDispatcher.sol';
 import '../interface/IERC20.sol';
 
 interface CErc20 {
+	function balanceOf(address _owner) external view returns (uint);
 	function mint(uint mintAmount) external returns (uint);
 	function redeemUnderlying(uint redeemAmount) external returns (uint);
+	function redeem(uint redeemAmount) external returns (uint);
 	function exchangeRateStored() external view returns (uint);
 }
 
@@ -62,9 +64,9 @@ contract CompoundHandler is ITargetHandler, DSAuth, DSMath {
 	}
 
 	function drainFunds() external auth returns (uint256) {
-		uint256 amount = getBalance();
-		if(amount > 0) {
-			CErc20(targetAddr).redeemUnderlying(amount);
+		uint256 cTokenAmount = CErc20(targetAddr).balanceOf(address(this));
+		if(cTokenAmount > 0) {
+			CErc20(targetAddr).redeem(cTokenAmount);
 			if (principle > 0) {
 				IERC20(token).transfer(IDispatcher(dispatcher).getFund(), principle);
 				principle = 0;
@@ -79,7 +81,7 @@ contract CompoundHandler is ITargetHandler, DSAuth, DSMath {
 	}
 
 	function getBalance() public view returns (uint256) {
-	    uint256 currentBalance = mul(IERC20(targetAddr).balanceOf(address(this)), CErc20(targetAddr).exchangeRateStored());
+	    uint256 currentBalance = mul(CErc20(targetAddr).balanceOf(address(this)), CErc20(targetAddr).exchangeRateStored());
 	    return currentBalance / (10 ** 18);
 	}
 
