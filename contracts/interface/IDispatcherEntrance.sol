@@ -1,4 +1,4 @@
-pragma solidity ^0.5.4;
+pragma solidity ^0.5.2;
 
 interface IDispatcherEntrance {
 	// _fund: 資金來源地址

@@ -1,4 +1,4 @@
-pragma solidity ^0.5.4;
+pragma solidity ^0.5.2;
 
 interface ITargetHandler {
 	function deposit(uint256 _amountss) external returns (uint256); // token deposit
