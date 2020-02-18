@@ -6,6 +6,7 @@ interface IDispatcher {
 	function trigger() external returns (bool);
 	function withdrawProfit() external returns (bool);
 	function drainFunds(uint256 _index) external returns (bool);
+	function refundDispather() external returns (bool);
 
 	// get function
 	function getReserve() external view returns (uint256);

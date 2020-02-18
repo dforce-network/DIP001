@@ -163,6 +163,12 @@ contract Dispatcher is IDispatcher, DSAuth {
 		return true;
 	}
 
+	function refundDispather () external auth returns (bool) {
+		uint256 lefto = return IERC20(token).balanceOf(address(this));
+		IERC20(token).transfer(fundPool, lefto);
+		return true;
+	}
+
 	// getter function
 	function getReserve() public view returns (uint256) {
 		return IERC20(token).balanceOf(fundPool);
