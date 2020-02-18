@@ -19,7 +19,6 @@ contracts/DSLibrary
     DSAuth.sol
     DSGuard.sol
     DSMath.sol
-    DSToken.sol
 
 contracts/interface
     IDispatcher.sol
