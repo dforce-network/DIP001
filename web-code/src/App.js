@@ -1609,7 +1609,7 @@ export default class App extends React.Component {
                         index={index}
                         data={item}
                         ratio={this.state.arr_Propotion[index]}
-                        decimals={this.state.decimals.USDC}
+                        decimals={this.state.decimals_num}
                         del_item={() => { this.del_item(index) }}
                         clear_item={() => { this.clear_item(index) }}
                         TargetHandlerAddress={this.state.arr_TargetHandlerAddress[index]}
