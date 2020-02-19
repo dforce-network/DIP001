@@ -11,7 +11,8 @@ interface IERC20 {
 
 interface CErc20 {
 	function mint(uint mintAmount) external returns (uint);
-	function redeemUnderlying(uint redeemAmount) external returns (uint);
+	function redeem(uint tokenAmount) external returns (uint);
+	function redeemUnderlying(uint deemAmount) external returns (uint);
 	function exchangeRateStored() external view returns (uint);
 }
 
@@ -34,6 +35,13 @@ contract FakeCompound {
 		balances[msg.sender] -= _amounts;
 		require(IERC20(token).transfer(msg.sender, _amounts), "contrract balance not enough");
 		return 0;
+	}
+
+	function redeem(uint _amounts) external returns (uint) {
+		require(balances[msg.sender] >= _amounts, "user have no enough token");
+		balances[msg.sender] -= _amounts;
+		require(IERC20(token).transfer(msg.sender, _amounts), "contrract balance not enough");
+		return 0;		
 	}
 
 	function makeProfitToUser(address _user, uint256 _percentage) external {

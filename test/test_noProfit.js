@@ -120,9 +120,8 @@ contract('procedure without profit', function (accounts) {
 		await showResult("set target ratio and trigger")
 
 		// 6. add second target handler (compound handler)
-		tx = await dispatcher.addTargetHandler(compoundHandler_1.address)
 		targetPercentage = [700, 300]
-		tx = await dispatcher.setAimedPropotion(targetPercentage)
+		tx = await dispatcher.addTargetHandler(compoundHandler_1.address, targetPercentage)
 		await showResult("add new target handler, 70:30")
 
 		// 7. trigger
@@ -136,7 +135,8 @@ contract('procedure without profit', function (accounts) {
 
 		// remove compund handler, should fail
 		try {
-			await dispatcher.removeTargetHandler(compoundHandler_1.address, 1, { from: admin })
+			targetPercentage = [1000]
+			tx = await dispatcher.removeTargetHandler(compoundHandler_1.address, 1, targetPercentage, { from: admin })
 			assert.fail('Expected revert not received');
 		} catch (error) {
 			const revertFound = error.message.search('revert') >= 0;
@@ -149,9 +149,8 @@ contract('procedure without profit', function (accounts) {
 		await showResult("drain compound handler ")
 
 		// 10. remove compound handler
-		tx = await dispatcher.removeTargetHandler(compoundHandler_1.address, 1, { from: admin })
 		targetPercentage = [1000]
-		tx = await dispatcher.setAimedPropotion(targetPercentage, { from: admin})
+		tx = await dispatcher.removeTargetHandler(compoundHandler_1.address, 1, targetPercentage, { from: admin })
 		await showResult("remove compound handler ")
 
 		// 11. withdraw 6000
@@ -159,9 +158,8 @@ contract('procedure without profit', function (accounts) {
 		await showResult("withdraw 6000")
 
 		// 12. add compound handler
-		tx = await dispatcher.addTargetHandler(compoundHandler_1.address)
 		targetPercentage = [700, 300]
-		tx = await dispatcher.setAimedPropotion(targetPercentage, { from: admin})
+		tx = await dispatcher.addTargetHandler(compoundHandler_1.address, targetPercentage)
 		await showResult("add handler")
 
 		// 13. add 10000 to reserve, and trigger
@@ -181,9 +179,8 @@ contract('procedure without profit', function (accounts) {
 		await showResult("trigger")
 
 		// 17. add handler 3
-		tx = await dispatcher.addTargetHandler(lendFMeHandler_2.address)
 		targetPercentage = [400, 500, 100]
-		tx = await dispatcher.setAimedPropotion(targetPercentage, { from: admin})
+		tx = await dispatcher.addTargetHandler(lendFMeHandler_2.address, targetPercentage)
 
 		// 18. add 5000
 		tx = await token.mint(fund.address, (await ether("5000")))
@@ -203,7 +200,8 @@ contract('procedure without profit', function (accounts) {
 
 		// remove handler 3, should fail
 		try {
-			await dispatcher.removeTargetHandler(lendFMeHandler_2.address, 2, { from: admin })
+			targetPercentage = [500, 500]
+			await dispatcher.removeTargetHandler(lendFMeHandler_2.address, 2, targetPercentage, { from: admin })
 			assert.fail('Expected revert not received');
 		} catch (error) {
 			const revertFound = error.message.search('revert') >= 0;
@@ -215,9 +213,8 @@ contract('procedure without profit', function (accounts) {
 		await showResult("drain handler 3")
 
 		// 23. remove handler3
-		tx = await dispatcher.removeTargetHandler(lendFMeHandler_2.address, 2, { from: admin })
-		// targetPercentage = [500]
-		// tx = await dispatcher.setAimedPropotion(targetPercentage, { from: admin})
+		targetPercentage = [500, 500]
+		tx = await dispatcher.removeTargetHandler(lendFMeHandler_2.address, 2, targetPercentage, { from: admin })
 		await showResult("remove handler 3")
 
 		// 24. drain compound handler
@@ -225,9 +222,8 @@ contract('procedure without profit', function (accounts) {
 		await showResult("drain handler 2 (compound)")
 
 		// 23. remove handler3
-		tx = await dispatcher.removeTargetHandler(compoundHandler_1.address, 1, { from: admin })
-		// targetPercentage = [500]
-		// tx = await dispatcher.setAimedPropotion(targetPercentage, { from: admin})
+		targetPercentage = [1000]
+		tx = await dispatcher.removeTargetHandler(compoundHandler_1.address, 1, targetPercentage, { from: admin })
 		await showResult("remove handler 3 (compound)")
 
 	});

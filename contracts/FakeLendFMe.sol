@@ -1,4 +1,4 @@
-pragma solidity ^0.5.0;
+pragma solidity 0.5.4;
 
 interface IERC20 {
     function balanceOf(address _owner) external view returns (uint);
@@ -30,6 +30,11 @@ contract FakeLendFMe {
 	}
 
 	function withdraw(address _token, uint _amounts) external returns (uint) {
+		if (_amounts == uint(-1)) {
+			IERC20(token).transfer(msg.sender, balances[msg.sender]);
+			balances[msg.sender] = 0;
+			return 0;
+		}
 		require(balances[msg.sender] >= _amounts, "user have no enough token");
 		balances[msg.sender] -= _amounts;
 		require(IERC20(token).transfer(msg.sender, _amounts), "contrract balance not enough");

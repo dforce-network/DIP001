@@ -1,28 +1,16 @@
-pragma solidity ^0.5.2;
+pragma solidity 0.5.4;
 
 import './DSLibrary/DSAuth.sol';
+import './DSLibrary/DSMath.sol';
 import './interface/ITargetHandler.sol';
 import './interface/IDispatcher.sol';
-import './interface/IERC20.sol';
+import './interface/IERC20.sol';	
 
 interface IFund {
 	function transferOut(address _tokenID, address _to, uint amount) external returns (bool);
 }
 
-library DSMath {
-    function add(uint x, uint y) internal pure returns (uint z) {
-        require((z = x + y) >= x, "ds-math-add-overflow");
-    }
-    function sub(uint x, uint y) internal pure returns (uint z) {
-        require((z = x - y) <= x, "ds-math-sub-underflow");
-    }
-    function mul(uint x, uint y) internal pure returns (uint z) {
-        require(y == 0 || (z = x * y) / y == x, "ds-math-mul-overflow");
-    }
-}
-
-contract Dispatcher is IDispatcher, DSAuth {
-	using DSMath for uint256;
+contract Dispatcher is IDispatcher, DSAuth, DSMath {
 
 	address token;
 	address profitBeneficiary;
@@ -46,7 +34,7 @@ contract Dispatcher is IDispatcher, DSAuth {
 		uint256 sum = 0;
 		uint256 i;
 		for(i = 0; i < _thAddr.length; ++i) {
-			sum = sum.add(_thPropotion[i]);
+			sum = add(sum, _thPropotion[i]);
 		}
 		require(sum == 1000, "the sum of propotion must be 1000");
 		for(i = 0; i < _thAddr.length; ++i) {
@@ -61,20 +49,22 @@ contract Dispatcher is IDispatcher, DSAuth {
 
 	function trigger () external returns (bool) {
 		uint256 reserve = getReserve();
-		uint256 denominator = reserve.add(getPrinciple());
+		uint256 denominator = add(reserve, getPrinciple());
 		uint256 reserveMax = reserveUpperLimit * denominator / 1000;
 		uint256 reserveMin = reserveLowerLimit * denominator / 1000;
 		uint256 amounts;
 		if (reserve > reserveMax) {
-			amounts = reserve - reserveMax;
-			amounts = amounts / executeUnit * executeUnit;
+			amounts = sub(reserve, reserveMax);
+			amounts = div(amounts, executeUnit);
+			amounts = mul(amounts, executeUnit);
 			if (amounts > 0) {
 				internalDeposit(amounts);
 				return true;
 			}
 		} else if (reserve < reserveMin) {
-			amounts = reserveMin - reserve;
-			amounts = amounts / executeUnit * executeUnit;
+			amounts = sub(reserveMin, reserve);
+			amounts = div(amounts, executeUnit);
+			amounts = mul(amounts, executeUnit);
 			if (amounts > 0) {
 				withdrawPrinciple(amounts);
 				return true;
@@ -89,23 +79,23 @@ contract Dispatcher is IDispatcher, DSAuth {
 		uint256 amountsToTH;
 		uint256 thCurrentBalance;
 		uint256 amountsToSatisfiedAimedPropotion;
-		uint256 totalPrincipleAfterDeposit = getPrinciple().add(_amounts);
+		uint256 totalPrincipleAfterDeposit = add(getPrinciple(), _amounts);
 		TargetHandler memory _th;
 		for(i = 0; i < ths.length; ++i) {
 			_th = ths[i];
 			amountsToTH = 0;
 			thCurrentBalance = getTHPrinciple(i);
-			amountsToSatisfiedAimedPropotion = totalPrincipleAfterDeposit.mul(_th.aimedPropotion) / 1000;
-			amountsToSatisfiedAimedPropotion = amountsToSatisfiedAimedPropotion / executeUnit * executeUnit;
+			amountsToSatisfiedAimedPropotion = div(mul(totalPrincipleAfterDeposit, _th.aimedPropotion), 1000);
+			amountsToSatisfiedAimedPropotion = mul(div(amountsToSatisfiedAimedPropotion, executeUnit), executeUnit);
 			if (thCurrentBalance > amountsToSatisfiedAimedPropotion) {
 				continue;
 			} else {
-				amountsToTH = amountsToSatisfiedAimedPropotion - thCurrentBalance;
+				amountsToTH = sub(amountsToSatisfiedAimedPropotion, thCurrentBalance);
 				if (amountsToTH > _amounts) {
 					amountsToTH = _amounts;
 					_amounts = 0;
 				} else {
-					_amounts -= amountsToTH;
+					_amounts = sub(_amounts, amountsToTH);
 				}
 				if(amountsToTH > 0) {
 					IFund(fundPool).transferOut(token, _th.targetHandlerAddr, amountsToTH);
@@ -121,22 +111,22 @@ contract Dispatcher is IDispatcher, DSAuth {
 		uint256 amountsFromTH;
 		uint256 thCurrentBalance;
 		uint256 amountsToSatisfiedAimedPropotion;
-		uint256 totalBalanceAfterWithdraw = getPrinciple().sub(_amounts);
+		uint256 totalBalanceAfterWithdraw = sub(getPrinciple(), _amounts);
 		TargetHandler memory _th;
 		for(i = 0; i < ths.length; ++i) {
 			_th = ths[i];
 			amountsFromTH = 0;
 			thCurrentBalance = getTHPrinciple(i);
-			amountsToSatisfiedAimedPropotion = totalBalanceAfterWithdraw.mul(_th.aimedPropotion) / 1000;
+			amountsToSatisfiedAimedPropotion = div(mul(totalBalanceAfterWithdraw, _th.aimedPropotion), 1000);
 			if (thCurrentBalance < amountsToSatisfiedAimedPropotion) {
 				continue;
 			} else {
-				amountsFromTH = thCurrentBalance - amountsToSatisfiedAimedPropotion;
+				amountsFromTH = sub(thCurrentBalance, amountsToSatisfiedAimedPropotion);
 				if (amountsFromTH > _amounts) {
 					amountsFromTH = _amounts;
 					_amounts = 0;
 				} else {
-					_amounts -= amountsFromTH;
+					_amounts = sub(_amounts, amountsFromTH);
 				}
 				if (amountsFromTH > 0) {
 					ITargetHandler(_th.targetHandlerAddr).withdraw(amountsFromTH);
@@ -163,9 +153,9 @@ contract Dispatcher is IDispatcher, DSAuth {
 		return true;
 	}
 
-	function refundDispather () external auth returns (bool) {
+	function refundDispather (address _receiver) external auth returns (bool) {
 		uint256 lefto = IERC20(token).balanceOf(address(this));
-		IERC20(token).transfer(profitBeneficiary, lefto);
+		IERC20(token).transfer(_receiver, lefto);
 		return true;
 	}
 
@@ -176,30 +166,30 @@ contract Dispatcher is IDispatcher, DSAuth {
 
 	function getReserveRatio() public view returns (uint256) {
 		uint256 reserve = getReserve();
-		uint256 denominator = getPrinciple().add(reserve);
+		uint256 denominator = add(getPrinciple(), reserve);
 		if (denominator == 0) {
 			return 0;
 		} else {
-			return reserve * 1000 / denominator;
+			return div(mul(reserve, 1000), denominator);
 		}
 	}
 
 	function getPrinciple() public view returns (uint256 result) {
 		result = 0;
 		for(uint256 i = 0; i < ths.length; ++i) {
-			result = result.add(getTHPrinciple(i));
+			result = add(result, getTHPrinciple(i));
 		}
 	}
 
 	function getBalance() public view returns (uint256 result) {
 		result = 0;
 		for(uint256 i = 0; i < ths.length; ++i) {
-			result = result.add(getTHBalance(i));
+			result = add(result, getTHBalance(i));
 		}
 	}
 
 	function getProfit() public view returns (uint256) {
-		return getBalance().sub(getPrinciple());
+		return sub(getBalance(), getPrinciple());
 	}
 
 	function getTHPrinciple(uint256 _index) public view returns (uint256) {
@@ -289,7 +279,7 @@ contract Dispatcher is IDispatcher, DSAuth {
 		uint256 i;
 		TargetHandler memory _th;
 		for(i = 0; i < _thPropotion.length; ++i) {
-			sum += _thPropotion[i];
+			sum = add(sum, _thPropotion[i]);
 		}
 		require(sum == 1000, "the sum of propotion must be 1000");
 		for(i = 0; i < _thPropotion.length; ++i) {
@@ -315,7 +305,7 @@ contract Dispatcher is IDispatcher, DSAuth {
 
 		require(ths.length == _thPropotion.length, "wrong length");
 		for(i = 0; i < _thPropotion.length; ++i) {
-			sum += _thPropotion[i];
+			sum = add(sum, _thPropotion[i]);
 		}
 		require(sum == 1000, "the sum of propotion must be 1000");
 		for(i = 0; i < _thPropotion.length; ++i) {
