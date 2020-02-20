@@ -2,18 +2,18 @@
 
 # Folders
 contracts
-contracts/CompoundHandler
+contracts/handlers
 contracts/DSLibrary
 contracts/interface
-contracts/lendFMeHandler
 
 # Files
 contracts:
     Dispatcher.sol
     DispatcherEntrance.sol
 
-contracts/CompoundHandler
+contracts/handlers
     CompoundHandler.sol
+    lendFMeHandler.sol
 
 contracts/DSLibrary
     DSAuth.sol
@@ -25,6 +25,4 @@ contracts/interface
     IDispatcherEntrance.sol
     IERC20.sol
     ITargetHandler.sol
-
-contracts/lendFMeHandler
-    lendFMeHandler.sol
+    
