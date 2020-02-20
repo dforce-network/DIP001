@@ -1,9 +1,9 @@
 pragma solidity ^0.5.2;
 
-import './DSLibrary/DSAuth.sol';
-import './interface/ITargetHandler.sol';
-import './interface/IDispatcher.sol';
-import './interface/IERC20.sol';
+import '../DSLibrary/DSAuth.sol';
+import '../interface/ITargetHandler.sol';
+import '../interface/IDispatcher.sol';
+import '../interface/IERC20.sol';
 
 interface IDeFi {
 	function deposit(uint256 _amounts) external;

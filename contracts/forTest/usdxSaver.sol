@@ -1,6 +1,6 @@
 pragma solidity ^0.5.2;
 
-import './DSLibrary/DSAuth.sol';
+import '../DSLibrary/DSAuth.sol';
 
 interface IERC20 {
     function balanceOf(address _owner) external view returns (uint);

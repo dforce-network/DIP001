@@ -1,6 +1,6 @@
 pragma solidity ^0.5.2;
 
-import './interface/ITargetHandler.sol';
+import '../interface/ITargetHandler.sol';
 
 contract FakeDispatcher {
     address public fundPool;
