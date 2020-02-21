@@ -50,7 +50,9 @@ export default class App extends React.Component {
       Lower_Limit_enable: true,
       handler_ratio_enable: true,
       add_handler_enable: false,
-      update_Beneficiary_enable: false
+      update_Beneficiary_enable: false,
+
+      add_handler_num: 0
     }
 
     this.address_USDC = '0x4DBCdF9B62e891a7cec5A2568C3F4FAF9E8Abe2b';
@@ -265,9 +267,14 @@ export default class App extends React.Component {
   // btn Add-Handler
   addTargetHandler = () => {
     console.log('add-Target-Handler');
+    var t_arr = [];
+    for (var i = 0; i < this.state.arr_Propotion.length; i++) {
+      t_arr[i] = this.state.arr_Propotion[i] / 10
+    }
     this.setState({
       visible_add_handler: true,
-      add_handler_address: ''
+      add_handler_address: '',
+      handler_ratio_arr_p: t_arr
     });
   }
 
@@ -352,6 +359,24 @@ export default class App extends React.Component {
       }
     })
   }
+  handler_ratio_change_p = (val, index) => {
+    console.log(val, index);
+    var t_arr = this.state.handler_ratio_arr_p;
+    t_arr[index] = val;
+    this.setState({
+      handler_ratio_arr_p: t_arr
+    })
+  }
+  handler_ratio_change_d = (val, index) => {
+    console.log(val, index);
+    var t_arr = this.state.handler_ratio_arr_d;
+    t_arr[index] = val;
+    this.setState({
+      handler_ratio_arr_d: t_arr
+    })
+  }
+
+
   input_Upper_change = (val) => {
     // console.log(typeof(val)) // val string
     console.log(val, this.state.Reserve_Lower_Limit_cp);
@@ -385,18 +410,34 @@ export default class App extends React.Component {
     })
   }
 
+  add_handler_num_change = (val) => {
+    console.log(val);
+    this.setState({ add_handler_num: val })
+  }
+
 
 
 
   // Add Handler
   add_handler_click = () => {
-    console.log('addTargetHandler: ', this.state.Dispatcher);
-    this.state.Dispatcher.methods.addTargetHandler(this.state.add_handler_address).estimateGas(
+    // console.log('addTargetHandler: ', this.state.Dispatcher);
+    // console.log(this.state.add_handler_num, this.state.handler_ratio_arr_p);
+    var t_arr = [];
+    t_arr = this.state.handler_ratio_arr_p;
+    t_arr.push(this.state.add_handler_num);
+
+    for (var i = 0; i < t_arr.length; i++) {
+      t_arr[i] = t_arr[i] * 10;
+    }
+    console.log(t_arr);
+    // return;
+
+    this.state.Dispatcher.methods.addTargetHandler(this.state.add_handler_address, t_arr).estimateGas(
       {
         from: this.state.my_account
       }, (err, gasLimit) => {
         this.new_web3.eth.getGasPrice((err, gasPrice) => {
-          this.state.Dispatcher.methods.addTargetHandler(this.state.add_handler_address).send(
+          this.state.Dispatcher.methods.addTargetHandler(this.state.add_handler_address, t_arr).send(
             {
               from: this.state.my_account,
               gas: Math.ceil(gasLimit * 1.3),
@@ -801,10 +842,24 @@ export default class App extends React.Component {
         })
       })
     } else if (this.state.click_action === 'remove') {
-      console.log(this.state.arr_handler_address[this.state.del_item_index], this.state.del_item_index);
+      // handler_ratio_arr_d
+      // console.log(this.state.arr_handler_address[this.state.del_item_index], this.state.del_item_index);
+      console.log(this.state.del_item_index, this.state.handler_ratio_arr_d);
+      var t_arr = this.state.handler_ratio_arr_d;
+      var t_arr2 = t_arr.splice(this.state.del_item_index, 1);
+      // console.log(t_arr);
+      // return;
+
+      for (var i = 0; i < t_arr.length; i++) {
+        t_arr[i] = t_arr[i] * 10;
+      }
+      console.log(t_arr);
+      // return;
+
       this.state.Dispatcher.methods.removeTargetHandler(
         this.state.arr_handler_address[this.state.del_item_index],
-        this.state.del_item_index
+        this.state.del_item_index,
+        t_arr
       ).estimateGas(
         {
           from: this.state.my_account
@@ -812,7 +867,8 @@ export default class App extends React.Component {
           this.new_web3.eth.getGasPrice((err, gasPrice) => {
             this.state.Dispatcher.methods.removeTargetHandler(
               this.state.arr_handler_address[this.state.del_item_index],
-              this.state.del_item_index
+              this.state.del_item_index,
+              t_arr
             ).send(
               {
                 from: this.state.my_account,
@@ -928,10 +984,16 @@ export default class App extends React.Component {
 
   del_item = (index) => {
     console.log(index)
+    //handler_ratio_arr_d
+    var t_arr = [];
+    for (var i = 0; i < this.state.arr_Propotion.length; i++) {
+      t_arr[i] = this.state.arr_Propotion[i] / 10
+    }
     this.setState({
       del_item_index: index,
       click_action: 'remove',
-      visible_click_action: true
+      visible_click_action: true,
+      handler_ratio_arr_d: t_arr
     })
   }
   clear_item = (index) => {
@@ -1135,6 +1197,41 @@ export default class App extends React.Component {
                 </div>
               </div>
 
+              <div className='handler-wrap'>
+                <Input
+                  type='number'
+                  onChange={(e) => { this.add_handler_num_change(e.target.value) }}
+                  value={this.state.add_handler_num}
+                />%
+              </div>
+
+              <div className='ratio-arr'>
+                {
+                  this.state.arr_Propotion &&
+                  this.state.arr_Propotion.map((item, index) => {
+                    return (
+                      <div className='ratio-arr-item'>
+                        <span className='ratio-arr-item-title'>
+                          Handler: {this.state.arr_handler_address[index]}
+                        </span>
+                        <span className='ratio-arr-item-input'>
+                          {
+                            this.state.handler_ratio_arr_p &&
+                            <>
+                              <Input
+                                type='number'
+                                onChange={(e) => { this.handler_ratio_change_p(e.target.value, index) }}
+                                value={this.state.handler_ratio_arr_p[index]}
+                              />%
+                          </>
+                          }
+                        </span>
+                      </div>
+                    )
+                  })
+                }
+              </div>
+
               <div className='popup-add-handler-confirm'>
                 <span className={this.state.add_handler_enable ? 'confirm-btn active' : 'confirm-btn'} onClick={() => { this.add_handler_click() }}>Confirm</span>
               </div>
@@ -1262,7 +1359,36 @@ export default class App extends React.Component {
             footer={false}
           >
             <div className='popup-tips'>
-              <div className='popup-tips-wrap'>Please make sure you want to {this.state.click_action} this TargetHandler?</div>
+              <div className='popup-tips-wrap'>
+                Please make sure you want to {this.state.click_action} this TargetHandler?
+              </div>
+
+              {
+                this.state.click_action === 'remove' &&
+                <div className='del-arr'>
+                  {
+                    this.state.arr_Propotion &&
+                    this.state.arr_Propotion.map((item, index) => {
+                      return (
+                        <div className={this.state.del_item_index === index ? 'ratio-arr-item active' : 'ratio-arr-item'}>
+                          <span className='ratio-arr-item-title'>
+                            Handler: {this.state.arr_handler_address[index]}
+                          </span>
+                          <span className='ratio-arr-item-input'>
+                            <Input
+                              type='number'
+                              disabled={this.state.del_item_index === index ? true : false}
+                              onChange={(e) => { this.handler_ratio_change_d(e.target.value, index) }}
+                              value={this.state.handler_ratio_arr_d[index]}
+                            />%
+                          </span>
+                        </div>
+                      )
+                    })
+                  }
+                </div>
+              }
+
 
               <div className='popup-tips-confirm'>
                 <span className='confirm-btn' onClick={() => { this.update_click_action_click() }}>Confirm</span>

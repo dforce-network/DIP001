@@ -1,5 +1,28 @@
 [
     {
+        "constant": true,
+        "inputs": [
+            {
+                "name": "base",
+                "type": "uint256"
+            },
+            {
+                "name": "exponent",
+                "type": "uint256"
+            }
+        ],
+        "name": "pow",
+        "outputs": [
+            {
+                "name": "",
+                "type": "uint256"
+            }
+        ],
+        "payable": false,
+        "stateMutability": "pure",
+        "type": "function"
+    },
+    {
         "constant": false,
         "inputs": [],
         "name": "acceptOwnership",
@@ -203,6 +226,25 @@
         "type": "function"
     },
     {
+        "constant": false,
+        "inputs": [
+            {
+                "name": "_receiver",
+                "type": "address"
+            }
+        ],
+        "name": "refundDispather",
+        "outputs": [
+            {
+                "name": "",
+                "type": "bool"
+            }
+        ],
+        "payable": false,
+        "stateMutability": "nonpayable",
+        "type": "function"
+    },
+    {
         "constant": true,
         "inputs": [],
         "name": "getReserve",
@@ -280,37 +322,6 @@
                 "type": "uint256"
             }
         ],
-        "name": "getTHData",
-        "outputs": [
-            {
-                "name": "",
-                "type": "uint256"
-            },
-            {
-                "name": "",
-                "type": "uint256"
-            },
-            {
-                "name": "",
-                "type": "uint256"
-            },
-            {
-                "name": "",
-                "type": "uint256"
-            }
-        ],
-        "payable": false,
-        "stateMutability": "view",
-        "type": "function"
-    },
-    {
-        "constant": true,
-        "inputs": [
-            {
-                "name": "_index",
-                "type": "uint256"
-            }
-        ],
         "name": "getTHPrinciple",
         "outputs": [
             {
@@ -351,6 +362,37 @@
         ],
         "name": "getTHProfit",
         "outputs": [
+            {
+                "name": "",
+                "type": "uint256"
+            }
+        ],
+        "payable": false,
+        "stateMutability": "view",
+        "type": "function"
+    },
+    {
+        "constant": true,
+        "inputs": [
+            {
+                "name": "_index",
+                "type": "uint256"
+            }
+        ],
+        "name": "getTHData",
+        "outputs": [
+            {
+                "name": "",
+                "type": "uint256"
+            },
+            {
+                "name": "",
+                "type": "uint256"
+            },
+            {
+                "name": "",
+                "type": "uint256"
+            },
             {
                 "name": "",
                 "type": "uint256"
@@ -561,6 +603,10 @@
             {
                 "name": "_index",
                 "type": "uint256"
+            },
+            {
+                "name": "_thPropotion",
+                "type": "uint256[]"
             }
         ],
         "name": "removeTargetHandler",
@@ -580,6 +626,10 @@
             {
                 "name": "_targetHandlerAddr",
                 "type": "address"
+            },
+            {
+                "name": "_thPropotion",
+                "type": "uint256[]"
             }
         ],
         "name": "addTargetHandler",

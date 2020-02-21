@@ -23,6 +23,30 @@
     }
   }
 
+  .handler-wrap {
+    width: 80px;
+
+    input {
+      width: 50px;
+    }
+  }
+
+  .ratio-arr-item {
+    .ratio-arr-item-title {
+      display: block;
+      margin-top: 16px;
+      margin-bottom: 6px;
+    }
+
+    .ratio-arr-item-input {
+      width: 80px;
+
+      input {
+        width: 50px;
+      }
+    }
+  }
+
   .popup-add-handler-confirm {
     // background-color: red;
     margin-top: 15px;
@@ -166,6 +190,7 @@
     font-weight: 400;
     color: rgba(37, 33, 82, 1);
     line-height: 24px;
+    margin-bottom: 15px;
   }
 
   .popup-tips-confirm {
@@ -184,6 +209,27 @@
       font-weight: 400;
       color: #675CFF;
       cursor: pointer;
+    }
+  }
+
+  .del-arr {
+
+    .ratio-arr-item {
+      border-bottom: 1px solid #e8e8e8;
+      margin-bottom: 10px;
+      padding-bottom: 10px;
+
+      .ratio-arr-item-input {
+        width: 80px;
+
+        input {
+          width: 50px;
+        }
+      }
+    }
+
+    .active {
+      color: red;
     }
   }
 }
