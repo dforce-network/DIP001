@@ -16,16 +16,16 @@ contract('edge testing', function (accounts) {
 	const profitBeneficiary = accounts[1]
 
 	const ether = async function (amount) {
-		return await web3.utils.toWei(amount, "ether")
+		return await web3.utils.toWei(amount, "mwei")
 	}
 
 	const toEther = async function (amount) {
-		return await web3.utils.fromWei(amount, "ether")
+		return await web3.utils.fromWei(amount, "mwei")
 	}
 
 	it("Only A target handler", async function () {
 		let tx
-		let token = await DSToken.new("0x444600000000000000000000000000")
+		let token = await DSToken.new("0x444600000000000000000000000000", 6)
 		let fund = await Fund.new(token.address)
 
 		const balanceOf = async function (address) {
@@ -37,7 +37,7 @@ contract('edge testing', function (accounts) {
 
 		let targetAddress = [lendFMeHandler_1.address]
 		let targetPercentage = [1000]
-		let dispatcher = await Dispatcher.new(token.address, fund.address, targetAddress, targetPercentage, 18)
+		let dispatcher = await Dispatcher.new(token.address, fund.address, targetAddress, targetPercentage, 6)
 		let dsGuard = await DSGuard.new()
 
 		tx = await lendFMeHandler_1.setDispatcher(dispatcher.address);
@@ -89,6 +89,7 @@ contract('edge testing', function (accounts) {
 			}
 		}
 
+		tx = await dispatcher.setExecuteUnit(10000)
 		await showResult("init")
 
 		// pool reserve 10000
@@ -121,7 +122,7 @@ contract('edge testing', function (accounts) {
 
 	it("A/B target handler", async function () {
 		let tx
-		let token = await DSToken.new("0x444600000000000000000000000000")
+		let token = await DSToken.new("0x444600000000000000000000000000", 6)
 		let fund = await Fund.new(token.address)
 
 		const balanceOf = async function (address) {
@@ -134,7 +135,7 @@ contract('edge testing', function (accounts) {
 
 		let targetAddress = [lendFMeHandler_1.address, lendFMeHandler_2.address]
 		let targetPercentage = [0, 1000]
-		let dispatcher = await Dispatcher.new(token.address, fund.address, targetAddress, targetPercentage, 18)
+		let dispatcher = await Dispatcher.new(token.address, fund.address, targetAddress, targetPercentage, 6)
 		let dsGuard = await DSGuard.new()
 
 		tx = await lendFMeHandler_1.setDispatcher(dispatcher.address);
@@ -190,6 +191,7 @@ contract('edge testing', function (accounts) {
 			}
 		}
 
+		tx = await dispatcher.setExecuteUnit(10000);
 		await showResult("init")
 
 		// pool reserve 10000
@@ -234,7 +236,7 @@ contract('edge testing', function (accounts) {
 
 	it("A/B/C target handler", async function () {
 		let tx
-		let token = await DSToken.new("0x444600000000000000000000000000")
+		let token = await DSToken.new("0x444600000000000000000000000000", 6)
 		let fund = await Fund.new(token.address)
 
 		const balanceOf = async function (address) {
@@ -248,7 +250,7 @@ contract('edge testing', function (accounts) {
 
 		let targetAddress = [lendFMeHandler_1.address, lendFMeHandler_2.address, lendFMeHandler_3.address]
 		let targetPercentage = [0, 0, 1000]
-		let dispatcher = await Dispatcher.new(token.address, fund.address, targetAddress, targetPercentage, 18)
+		let dispatcher = await Dispatcher.new(token.address, fund.address, targetAddress, targetPercentage, 6)
 		let dsGuard = await DSGuard.new()
 
 		tx = await lendFMeHandler_1.setDispatcher(dispatcher.address);
@@ -308,6 +310,7 @@ contract('edge testing', function (accounts) {
 			}
 		}
 
+		tx = await dispatcher.setExecuteUnit(10000)
 		await showResult("init")
 
 		// pool reserve 10000
