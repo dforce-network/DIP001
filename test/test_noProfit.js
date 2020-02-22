@@ -25,7 +25,7 @@ contract('procedure without profit', function (accounts) {
 
 	it("Dispatcher", async function () {
 		let tx
-		let token = await DSToken.new("0x444600000000000000000000000000")
+		let token = await DSToken.new("0x444600000000000000000000000000", 18)
 		let fund = await Fund.new(token.address)
 
 		const balanceOf = async function (address) {
