@@ -47,7 +47,7 @@ contract Dispatcher is IDispatcher, DSAuth, DSMath {
 		reserveLowerLimit = 300; // 300 / 1000 = 0.3
 	}
 
-	function trigger () external returns (bool) {
+	function trigger () auth external returns (bool) {
 		uint256 reserve = getReserve();
 		uint256 denominator = add(reserve, getPrinciple());
 		uint256 reserveMax = reserveUpperLimit * denominator / 1000;
