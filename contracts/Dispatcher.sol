@@ -27,7 +27,6 @@ contract Dispatcher is IDispatcher, DSAuth, DSMath {
 	}
 
 	constructor (address _tokenAddr, address _fundPool, address[] memory _thAddr, uint256[] memory _thPropotion, uint256 _tokenDecimals) public {
-		owner = msg.sender;
 		token = _tokenAddr;
 		fundPool = _fundPool;
 		require(_thAddr.length == _thPropotion.length, "wrong length");
