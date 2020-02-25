@@ -54,27 +54,27 @@ contract DSGuard is DSAuth, DSAuthority, DSGuardEvents {
             || acl[ANY][ANY][ANY];
     }
 
-    function _permit(bytes32 src, bytes32 dst, bytes32 sig) internal  {
+    function permit(bytes32 src, bytes32 dst, bytes32 sig) public auth {
         acl[src][dst][sig] = true;
         emit LogPermit(src, dst, sig);
     }
 
-    function _forbid(bytes32 src, bytes32 dst, bytes32 sig) internal {
+    function forbid(bytes32 src, bytes32 dst, bytes32 sig) public auth {
         acl[src][dst][sig] = false;
         emit LogForbid(src, dst, sig);
     }
 
     function permit(address src, address dst, bytes32 sig) public auth {
-        _permit(bytes32(bytes20(src)), bytes32(bytes20(dst)), sig);
+        permit(bytes32(bytes20(src)), bytes32(bytes20(dst)), sig);
     }
     function permitx(address src, address dst) public auth {
-        _permit(bytes32(bytes20(src)), bytes32(bytes20(dst)), ANY);
+        permit(bytes32(bytes20(src)), bytes32(bytes20(dst)), ANY);
     }
     function forbid(address src, address dst, bytes32 sig) public auth {
-        _forbid(bytes32(bytes20(src)), bytes32(bytes20(dst)), sig);
+        forbid(bytes32(bytes20(src)), bytes32(bytes20(dst)), sig);
     }
     function forbidx(address src, address dst) public auth {
-        _forbid(bytes32(bytes20(src)), bytes32(bytes20(dst)), ANY);
+        forbid(bytes32(bytes20(src)), bytes32(bytes20(dst)), ANY);
     }
 
 }
