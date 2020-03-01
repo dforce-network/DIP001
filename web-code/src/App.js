@@ -143,6 +143,19 @@ export default class App extends React.Component {
 
   callback = (key) => {
     console.log(key);
+    this.setState({
+      address_Dispatcher: '',
+      ProfitBeneficiary_address: '',
+      Gross_Amount: '',
+      Reserve_Lower_Limit: '',
+      Reserve_Upper_Limit: '',
+      Current_Dispatcher_Ratio: '',
+      Pool_Reserve: '',
+      Total_Principle: '',
+      arr_Propotion: '',
+      arr_handler: '',
+      my_balance: ''
+    });
     this.get_new_token_status(Number(key));
   }
 
@@ -686,13 +699,10 @@ export default class App extends React.Component {
     })
   }
   handler_ratio_click = () => {
-    console.log('setAimedPropotion', this.state.Dispatcher);
-    var t_arr = this.state.handler_ratio_arr;
+    var t_arr = [];
     for (var i = 0; i < this.state.handler_ratio_arr.length; i++) {
       t_arr[i] = this.state.handler_ratio_arr[i] * 10
     }
-    console.log(t_arr);
-
     this.state.Dispatcher.methods.setAimedPropotion(t_arr).estimateGas(
       {
         from: this.state.my_account
