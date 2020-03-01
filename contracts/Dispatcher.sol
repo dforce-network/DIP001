@@ -166,10 +166,11 @@ contract Dispatcher is IDispatcher, DSAuth, DSMath {
 	function getReserveRatio() public view returns (uint256) {
 		uint256 reserve = getReserve();
 		uint256 denominator = add(getPrinciple(), reserve);
+		uint256 adjusted_reserve = add(reserve, executeUnit);
 		if (denominator == 0) {
 			return 0;
 		} else {
-			return div(mul(reserve, 1000), denominator);
+			return div(mul(adjusted_reserve, 1000), denominator);
 		}
 	}
 
