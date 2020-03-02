@@ -1233,7 +1233,9 @@ export default class App extends React.Component {
                 <span className={'wrong-wrap'}>
                   <img src={wrong} alt='' />
                 </span>
-                <span className='net-name net-name-wrong'>{'Wrong Network'}</span>
+                <span className='net-name net-name-wrong'>
+                  {this.state.net_type.substring(0, 1).toUpperCase() + this.state.net_type.substring(1)}
+                </span>
               </div>
             }
             {
