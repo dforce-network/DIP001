@@ -52,7 +52,8 @@ export default class App extends React.Component {
       add_handler_enable: false,
       update_Beneficiary_enable: false,
 
-      add_handler_num: 0
+      add_handler_num: 0,
+      cur_tab_num: 1
     }
 
     this.address_USDC = '0x4DBCdF9B62e891a7cec5A2568C3F4FAF9E8Abe2b';
@@ -154,7 +155,8 @@ export default class App extends React.Component {
       Total_Principle: '',
       arr_Propotion: '',
       arr_handler: '',
-      my_balance: ''
+      my_balance: '',
+      cur_tab_num: Number(key)
     });
     this.get_new_token_status(Number(key));
   }
@@ -1017,8 +1019,17 @@ export default class App extends React.Component {
 
 
   update_all = () => {
+    var token_address;
+    if (this.state.cur_tab_num === 1) {
+      token_address = '0x4DBCdF9B62e891a7cec5A2568C3F4FAF9E8Abe2b'; // USDC
+    } else if (this.state.cur_tab_num === 2) {
+      token_address = '0x722E6238335d89393A42e2cA316A5fb1b8B2EB55'; // PAX
+    } else if (this.state.cur_tab_num === 3) {
+      token_address = '0xe72a3181f69Eb21A19bd4Ce19Eb68FDb333d74c6'; // TUSD
+    }
+
     let DispatcherEntrance = new this.new_web3.eth.Contract(DispatcherEntranceABI, this.address_DispatcherEntrance);
-    DispatcherEntrance.methods.getDispatcher(this.address_USDxPool, this.address_USDC).call().then(res_address => {
+    DispatcherEntrance.methods.getDispatcher(this.address_USDxPool, token_address).call().then(res_address => {
       this.address_Dispatcher = res_address;
       let Dispatcher = new this.new_web3.eth.Contract(DispatcherABI, this.address_Dispatcher);
 
@@ -1062,7 +1073,7 @@ export default class App extends React.Component {
       })
 
       Dispatcher.methods.getProfitBeneficiary().call().then((res_address) => {
-        let USDC = new this.new_web3.eth.Contract(USDCABI, this.address_USDC);
+        let USDC = new this.new_web3.eth.Contract(USDCABI, token_address);
         this.setState({
           USDC: USDC,
           ProfitBeneficiary_address: res_address
