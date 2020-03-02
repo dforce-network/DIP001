@@ -2,7 +2,8 @@ import React from 'react';
 import {
     format_persentage,
     format_balance,
-    format_str_to_K
+    format_str_to_K,
+    format_persentage_tofixed
 } from '../utils';
 import platform_map from '../abi/platform_map';
 
@@ -56,7 +57,7 @@ export default class HandlerItem extends React.Component {
                         </div>
                         <div className='item'>
                             <span className='item-title'>Ratio</span>
-                            <span className='item-num'>{format_persentage(this.props.ratio)}</span>
+                            <span className='item-num'>{format_persentage_tofixed(this.props.ratio)}</span>
                         </div>
                     </div>
                 </div>

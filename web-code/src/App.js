@@ -26,7 +26,8 @@ import platform_map from './abi/platform_map';
 import {
   format_persentage,
   format_balance,
-  format_str_to_K
+  format_str_to_K,
+  format_persentage_tofixed
 } from './utils';
 
 
@@ -1584,7 +1585,10 @@ export default class App extends React.Component {
                         <div className='item'>
                           <div className='item-title'>Current Reserve Ratio</div>
                           <div className='item-num'>
-                            {this.state.Current_Dispatcher_Ratio ? format_persentage(this.state.Current_Dispatcher_Ratio) : '···'}
+                            {
+                              this.state.Current_Dispatcher_Ratio ?
+                                format_persentage_tofixed(this.state.Current_Dispatcher_Ratio) : '···'
+                            }
                           </div>
                         </div>
                         <div className='item'>
@@ -1682,7 +1686,10 @@ export default class App extends React.Component {
                         <div className='item'>
                           <div className='item-title'>Current Reserve Ratio</div>
                           <div className='item-num'>
-                            {this.state.Current_Dispatcher_Ratio ? format_persentage(this.state.Current_Dispatcher_Ratio) : '···'}
+                            {
+                              this.state.Current_Dispatcher_Ratio ?
+                                format_persentage_tofixed(this.state.Current_Dispatcher_Ratio) : '···'
+                            }
                           </div>
                         </div>
                         <div className='item'>
@@ -1780,7 +1787,10 @@ export default class App extends React.Component {
                         <div className='item'>
                           <div className='item-title'>Current Reserve Ratio</div>
                           <div className='item-num'>
-                            {this.state.Current_Dispatcher_Ratio ? format_persentage(this.state.Current_Dispatcher_Ratio) : '···'}
+                            {
+                              this.state.Current_Dispatcher_Ratio ?
+                                format_persentage_tofixed(this.state.Current_Dispatcher_Ratio) : '···'
+                            }
                           </div>
                         </div>
                         <div className='item'>

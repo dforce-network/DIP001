@@ -2,6 +2,10 @@ export const format_persentage = (num) => {
     return num / 10 + '%';
 }
 
+export const format_persentage_tofixed = (num) => {
+    return (num / 10).toFixed(1) + '%';
+}
+
 export const format_balance = (numStr, decimals, decimalPlace = decimals) => {
     numStr = numStr.toLocaleString().replace(/,/g, '');
     // decimals = decimals.toString();
