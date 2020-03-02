@@ -1091,6 +1091,62 @@ export default class App extends React.Component {
     })
   }
 
+  update_all_timer = () => {
+    if (!this.state.Dispatcher) {
+      return;
+    }
+    // get data
+    this.state.Dispatcher.methods.getReserveRatio().call().then(res_ReserveRatio => {
+      this.setState({ Current_Dispatcher_Ratio: res_ReserveRatio })
+    })
+
+    this.state.Dispatcher.methods.getReserveUpperLimit().call().then(res_ReserveUpperLimit => {
+      this.state.Dispatcher.methods.getReserveLowerLimit().call().then(res_ReserveLowerLimit => {
+        this.setState({
+          Reserve_Upper_Limit: res_ReserveUpperLimit,
+          Reserve_Lower_Limit: res_ReserveLowerLimit
+        })
+      })
+    })
+
+    this.state.Dispatcher.methods.getPrinciple().call().then(res_Principle => {
+      this.state.Dispatcher.methods.getReserve().call().then(res_Reserve => {
+        this.setState({
+          Total_Principle: res_Principle,
+          Pool_Reserve: res_Reserve,
+          Gross_Amount: this.bn(res_Principle).add(this.bn(res_Reserve)).toString()
+        })
+      })
+    })
+
+    this.state.Dispatcher.methods.getTHStructures().call().then((res_THStructures) => {
+      this.setState({
+        arr_Propotion: res_THStructures[0],
+        arr_handler_address: res_THStructures[1],
+        arr_TargetHandlerAddress: res_THStructures[2]
+      }, () => {
+        this.get_handler_arr();
+      })
+    })
+
+    // this.state.Dispatcher.methods.getProfitBeneficiary().call().then((res_address) => {
+    //   let USDC = new this.new_web3.eth.Contract(USDCABI, token_address);
+    //   this.setState({
+    //     USDC: USDC,
+    //     ProfitBeneficiary_address: res_address
+    //   })
+    //   USDC.methods.balanceOf(res_address).call().then((res_balance) => {
+    //     if (res_balance) {
+    //       this.setState({
+    //         my_balance: res_balance
+    //       }, () => {
+    //         console.log(this.state.my_balance)
+    //       })
+    //     }
+    //   });
+    // })
+  }
+
 
   openNotification = (arg_title, arg_description) => {
     notification.open({
@@ -1148,7 +1204,11 @@ export default class App extends React.Component {
     }
   }
 
-
+  componentDidMount = () => {
+    setInterval(() => {
+      this.update_all_timer();
+    }, 1000 * 15)
+  }
 
   render() {
     return (
