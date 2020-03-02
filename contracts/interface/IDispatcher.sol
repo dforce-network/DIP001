@@ -19,32 +19,15 @@ interface IDispatcher {
 	function getTHProfit(uint256 _index) external view returns (uint256);
 	function getToken() external view returns (address);
 	function getFund() external view returns (address);
-
 	function getTHStructures() external view returns (uint256[] memory, address[] memory, address[] memory);
 	function getTHData(uint256 _index) external view returns (uint256, uint256, uint256, uint256);
-
-	// 取得 target handler 數量
 	function getTHCount() external view returns (uint256);
-
-	// 取得第 _index 個 target handler 地址
 	function getTHAddress(uint256 _index) external view returns (address);
-
-	// 取得第 _index 個 target 地址
 	function getTargetAddress(uint256 _index) external view returns (address);
-
-	// 取得目標比例, 每四位數做分割
 	function getPropotion() external view returns (uint256[] memory);
-
-	// 取得收益對象地址
 	function getProfitBeneficiary() external view returns (address);
-
-	// 取得 reserve 比例上限
 	function getReserveUpperLimit() external view returns (uint256);
-
-	// 取得 reserve 比例下限
 	function getReserveLowerLimit() external view returns (uint256);
-
-	// 取得執行最小單位
 	function getExecuteUnit() external view returns (uint256);
 
 	// Governmence Functions

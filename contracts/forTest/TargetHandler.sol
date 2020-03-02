@@ -34,9 +34,8 @@ contract TargetHandler is DSAuth, ITargetHandler{
 		IERC20(token).approve(_targetAddr, uint256(-1));
 	}
 
-	function setDispatcher(address _dispatcher) external auth returns (bool) {
+	function setDispatcher(address _dispatcher) external auth {
 		dispatcher = _dispatcher;
-		return true;
 	}
 
 	// trigger token deposit
