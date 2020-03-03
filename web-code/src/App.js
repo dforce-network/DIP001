@@ -145,6 +145,16 @@ export default class App extends React.Component {
         })
       })
     })
+
+    // add accounts changed
+    if (window.ethereum.on) {
+      window.ethereum.on('accountsChanged', (accounts) => {
+        console.log('accountsChanged: ', accounts[0]);
+        this.setState({
+          my_account: accounts[0]
+        })
+      });
+    }
   }
 
   callback = (key) => {
