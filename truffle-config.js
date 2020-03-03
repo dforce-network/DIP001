@@ -19,8 +19,8 @@
  */
 
 const HDWalletProvider = require('truffle-hdwallet-provider');
-var infuraKey = '3903dd30564147e5a22b76dc79815e2a';
-var mnemonic = 'minimum increase pottery marble dizzy weasel busy erosion tackle million present slow';
+var infuraKey = '';
+var mnemonic = '';
 // const infuraKey = "fj4jll3k.....";
 //
 // const fs = require('fs');
