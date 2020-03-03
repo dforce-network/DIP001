@@ -1,10 +1,10 @@
 {
     "main": {
-        "DispatcherEntrance": "0xECd103A57A806Ac83CC05D4C873ab92b319A6638",
-        "USDxPool": "0xaf54dcb325b6160871f1778c3043a1249bd9b1c1",
-        "USDC": "0x2cd68eCF48B0687c95EE6C06D33389688C3cbb8e",
-        "PAX": "0x6CDd244AFFf8902cE285F02C39A2623Ecb461454",
-        "TUSD": "0xfd062D0EBC900EF504435DCe9347797d3b5e12Aa"
+        "DispatcherEntrance": "0x8Ab51f2f409fF239aAc0a477e1b5E68a7de6EC93",
+        "USDxPool": "0x786bF554473f9aB733Fd683C528212492A23D895",
+        "USDC": "0xa0b86991c6218b36c1d19d4a2e9eb0ce3606eb48",
+        "PAX": "0x8e870d67f660d95d5be530380d0ec0bd388289e1",
+        "TUSD": "0x0000000000085d4780B73119b644AE5ecd22b376"
     },
     "rinkeby": {
         "DispatcherEntrance": "0x807bF5021a5A3eBb056f0978f1762e03799683bA",
