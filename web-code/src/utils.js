@@ -1,3 +1,8 @@
+
+
+
+
+
 export const format_persentage = (num) => {
     return num / 10 + '%';
 }

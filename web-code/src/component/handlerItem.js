@@ -21,7 +21,7 @@ export default class HandlerItem extends React.Component {
                     {
                         this.props.TargetHandlerAddress
                         &&
-                        platform_map[(this.props.TargetHandlerAddress).toLocaleLowerCase()]
+                        platform_map[this.props.net][(this.props.TargetHandlerAddress).toLocaleLowerCase()]
                     }
                     {/* {this.props.TargetHandlerAddress} */}
                     <span className='btn-clear'>

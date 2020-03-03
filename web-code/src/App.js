@@ -22,6 +22,7 @@ import DispatcherEntranceABI from './abi/dispatcherentrance';
 import DispatcherABI from './abi/dispatcher';
 import USDCABI from './abi/USDC';
 import platform_map from './abi/platform_map';
+import address_map from './abi/address';
 
 import {
   format_persentage,
@@ -57,16 +58,9 @@ export default class App extends React.Component {
       cur_tab_num: 1
     }
 
-    this.address_USDC = '0x4DBCdF9B62e891a7cec5A2568C3F4FAF9E8Abe2b';
-    this.address_USDxPool = '0xccf31dc9dcb6cb788d3c6b64f73efedfb7e9f20b';
-    this.address_DispatcherEntrance = '0x807bF5021a5A3eBb056f0978f1762e03799683bA';
-    this.address_Dispatcher = '';
-
     this.new_web3 = window.new_web3 = new Web3(Web3.givenProvider || null);
     this.bn = this.new_web3.utils.toBN;
     this.isAddress = this.new_web3.utils.isAddress;
-
-    this.get_cur_net();
 
     this.new_web3.givenProvider.enable().then(res_accounts => {
       console.log(res_accounts);
@@ -75,70 +69,80 @@ export default class App extends React.Component {
       })
     })
 
-
-    let DispatcherEntrance = new this.new_web3.eth.Contract(DispatcherEntranceABI, this.address_DispatcherEntrance);
-    DispatcherEntrance.methods.getDispatcher(this.address_USDxPool, this.address_USDC).call().then(res_address => {
-      this.address_Dispatcher = res_address;
-      // console.log(res_address);
-      let Dispatcher = new this.new_web3.eth.Contract(DispatcherABI, this.address_Dispatcher);
-
+    // this.get_cur_net();
+    this.new_web3.eth.net.getNetworkType().then(nettype => {
       this.setState({
-        address_Dispatcher: this.address_Dispatcher,
-        Dispatcher: Dispatcher
-      })
+        net_type: nettype
+      }, () => {
+        let address_DispatcherEntrance = address_map[this.state.net_type]['DispatcherEntrance'];
+        let address_USDxPool = address_map[this.state.net_type]['USDxPool'];
+        let address_USDC = address_map[this.state.net_type]['USDC'];
 
-      // get data
-      Dispatcher.methods.getReserveRatio().call().then(res_ReserveRatio => {
-        this.setState({ Current_Dispatcher_Ratio: res_ReserveRatio })
-      })
+        let DispatcherEntrance = new this.new_web3.eth.Contract(DispatcherEntranceABI, address_DispatcherEntrance);
+        DispatcherEntrance.methods.getDispatcher(address_USDxPool, address_USDC).call().then(res_address => {
+          this.address_Dispatcher = res_address;
+          // console.log(res_address);
+          let Dispatcher = new this.new_web3.eth.Contract(DispatcherABI, this.address_Dispatcher);
 
-      Dispatcher.methods.getReserveUpperLimit().call().then(res_ReserveUpperLimit => {
-        Dispatcher.methods.getReserveLowerLimit().call().then(res_ReserveLowerLimit => {
           this.setState({
-            Reserve_Upper_Limit: res_ReserveUpperLimit,
-            Reserve_Lower_Limit: res_ReserveLowerLimit
+            address_Dispatcher: this.address_Dispatcher,
+            Dispatcher: Dispatcher
           })
-        })
-      })
 
-      Dispatcher.methods.getPrinciple().call().then(res_Principle => {
-        Dispatcher.methods.getReserve().call().then(res_Reserve => {
-          this.setState({
-            Total_Principle: res_Principle,
-            Pool_Reserve: res_Reserve,
-            Gross_Amount: this.bn(res_Principle).add(this.bn(res_Reserve)).toString()
+          // get data
+          Dispatcher.methods.getReserveRatio().call().then(res_ReserveRatio => {
+            this.setState({ Current_Dispatcher_Ratio: res_ReserveRatio })
           })
-        })
-      })
 
-      Dispatcher.methods.getTHStructures().call().then((res_THStructures) => {
-        this.setState({
-          arr_Propotion: res_THStructures[0],
-          arr_handler_address: res_THStructures[1],
-          arr_TargetHandlerAddress: res_THStructures[2]
-        }, () => {
-          this.get_handler_arr();
-          this.timerID = setInterval(() => {
-            this.get_handler_arr();
-          }, 1000 * 15);
-        })
-      })
-
-      Dispatcher.methods.getProfitBeneficiary().call().then((res_address) => {
-        let USDC = new this.new_web3.eth.Contract(USDCABI, this.address_USDC);
-        this.setState({
-          USDC: USDC,
-          ProfitBeneficiary_address: res_address
-        })
-        USDC.methods.balanceOf(res_address).call().then((res_balance) => {
-          if (res_balance) {
-            this.setState({
-              my_balance: res_balance
-            }, () => {
-              console.log(this.state.my_balance)
+          Dispatcher.methods.getReserveUpperLimit().call().then(res_ReserveUpperLimit => {
+            Dispatcher.methods.getReserveLowerLimit().call().then(res_ReserveLowerLimit => {
+              this.setState({
+                Reserve_Upper_Limit: res_ReserveUpperLimit,
+                Reserve_Lower_Limit: res_ReserveLowerLimit
+              })
             })
-          }
-        });
+          })
+
+          Dispatcher.methods.getPrinciple().call().then(res_Principle => {
+            Dispatcher.methods.getReserve().call().then(res_Reserve => {
+              this.setState({
+                Total_Principle: res_Principle,
+                Pool_Reserve: res_Reserve,
+                Gross_Amount: this.bn(res_Principle).add(this.bn(res_Reserve)).toString()
+              })
+            })
+          })
+
+          Dispatcher.methods.getTHStructures().call().then((res_THStructures) => {
+            this.setState({
+              arr_Propotion: res_THStructures[0],
+              arr_handler_address: res_THStructures[1],
+              arr_TargetHandlerAddress: res_THStructures[2]
+            }, () => {
+              this.get_handler_arr();
+              this.timerID = setInterval(() => {
+                this.get_handler_arr();
+              }, 1000 * 15);
+            })
+          })
+
+          Dispatcher.methods.getProfitBeneficiary().call().then((res_address) => {
+            let USDC = new this.new_web3.eth.Contract(USDCABI, address_USDC);
+            this.setState({
+              USDC: USDC,
+              ProfitBeneficiary_address: res_address
+            })
+            USDC.methods.balanceOf(res_address).call().then((res_balance) => {
+              if (res_balance) {
+                this.setState({
+                  my_balance: res_balance
+                }, () => {
+                  console.log(this.state.my_balance)
+                })
+              }
+            });
+          })
+        })
       })
     })
   }
@@ -171,18 +175,21 @@ export default class App extends React.Component {
     var address_Dispatcher;
 
     if (key === 1) {
-      token_address = '0x4DBCdF9B62e891a7cec5A2568C3F4FAF9E8Abe2b'; // USDC
+      token_address = address_map[this.state.net_type]['USDC']; // USDC
       this.setState({ decimals_num: 6 });
     } else if (key === 2) {
-      token_address = '0x722E6238335d89393A42e2cA316A5fb1b8B2EB55'; // PAX
+      token_address = address_map[this.state.net_type]['PAX']; // PAX
       this.setState({ decimals_num: 18 });
     } else if (key === 3) {
-      token_address = '0xe72a3181f69Eb21A19bd4Ce19Eb68FDb333d74c6'; // TUSD
+      token_address = address_map[this.state.net_type]['TUSD']; // TUSD
       this.setState({ decimals_num: 18 });
     }
 
-    let DispatcherEntrance = new this.new_web3.eth.Contract(DispatcherEntranceABI, this.address_DispatcherEntrance);
-    DispatcherEntrance.methods.getDispatcher(this.address_USDxPool, token_address).call().then(res_address => {
+    let address_DispatcherEntrance = address_map[this.state.net_type]['DispatcherEntrance'];
+    let address_USDxPool = address_map[this.state.net_type]['USDxPool'];
+
+    let DispatcherEntrance = new this.new_web3.eth.Contract(DispatcherEntranceABI, address_DispatcherEntrance);
+    DispatcherEntrance.methods.getDispatcher(address_USDxPool, token_address).call().then(res_address => {
       console.log(res_address);
       // var address_Dispatcher = res_address;
       address_Dispatcher = res_address;
@@ -931,8 +938,10 @@ export default class App extends React.Component {
 
 
   update_ProfitBeneficiary = () => {
+    let address_USDC = address_map[this.state.net_type]['USDC'];
+
     this.state.Dispatcher.methods.getProfitBeneficiary().call().then((res_address) => {
-      let USDC = new this.new_web3.eth.Contract(USDCABI, this.address_USDC);
+      let USDC = new this.new_web3.eth.Contract(USDCABI, address_USDC);
       this.setState({
         USDC: USDC,
         ProfitBeneficiary_address: res_address
@@ -1022,15 +1031,18 @@ export default class App extends React.Component {
   update_all = () => {
     var token_address;
     if (this.state.cur_tab_num === 1) {
-      token_address = '0x4DBCdF9B62e891a7cec5A2568C3F4FAF9E8Abe2b'; // USDC
+      token_address = address_map[this.state.net_type]['USDC']; // USDC
     } else if (this.state.cur_tab_num === 2) {
-      token_address = '0x722E6238335d89393A42e2cA316A5fb1b8B2EB55'; // PAX
+      token_address = address_map[this.state.net_type]['PAX']; // PAX
     } else if (this.state.cur_tab_num === 3) {
-      token_address = '0xe72a3181f69Eb21A19bd4Ce19Eb68FDb333d74c6'; // TUSD
+      token_address = address_map[this.state.net_type]['TUSD']; // TUSD
     }
 
-    let DispatcherEntrance = new this.new_web3.eth.Contract(DispatcherEntranceABI, this.address_DispatcherEntrance);
-    DispatcherEntrance.methods.getDispatcher(this.address_USDxPool, token_address).call().then(res_address => {
+    let address_DispatcherEntrance = address_map[this.state.net_type]['DispatcherEntrance'];
+    let address_USDxPool = address_map[this.state.net_type]['USDxPool'];
+
+    let DispatcherEntrance = new this.new_web3.eth.Contract(DispatcherEntranceABI, address_DispatcherEntrance);
+    DispatcherEntrance.methods.getDispatcher(address_USDxPool, token_address).call().then(res_address => {
       this.address_Dispatcher = res_address;
       let Dispatcher = new this.new_web3.eth.Contract(DispatcherABI, this.address_Dispatcher);
 
@@ -1229,18 +1241,18 @@ export default class App extends React.Component {
               </div>
             }
             {
-              (this.state.net_type && this.state.net_type !== 'main') &&
-              <div className='Wrong'>
-                <span className={'wrong-wrap'}>
-                  <img src={wrong} alt='' />
-                </span>
-                <span className='net-name net-name-wrong'>
-                  {this.state.net_type.substring(0, 1).toUpperCase() + this.state.net_type.substring(1)}
-                </span>
-              </div>
+              // (this.state.net_type && this.state.net_type !== 'main') &&
+              // <div className='Wrong'>
+              //   <span className={'wrong-wrap'}>
+              //     <img src={wrong} alt='' />
+              //   </span>
+              //   <span className='net-name net-name-wrong'>
+              //     {this.state.net_type.substring(0, 1).toUpperCase() + this.state.net_type.substring(1)}
+              //   </span>
+              // </div>
             }
             {
-              (this.state.my_account && this.state.net_type === 'main') &&
+              (this.state.my_account && this.state.net_type) &&
               <div className='top-right-account'>
                 <div className='account' onClick={() => { this.to_ethscan_with_account(this, this.state.my_account) }}>
                   <span className={'spot ' + this.state.net_type}></span>
@@ -1833,6 +1845,7 @@ export default class App extends React.Component {
                         clear_item={() => { this.clear_item(index) }}
                         TargetHandlerAddress={this.state.arr_TargetHandlerAddress[index]}
                         length={this.state.arr_TargetHandlerAddress.length}
+                        net={this.state.net_type}
                       />
                     )
                   })
