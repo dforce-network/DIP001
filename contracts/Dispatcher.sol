@@ -42,8 +42,8 @@ contract Dispatcher is IDispatcher, DSAuth, DSMath {
 		executeUnit = (10 ** _tokenDecimals) / 10; //0.1
 
 		// set up the default limit
-		reserveUpperLimit = 350; // 350 / 1000 = 0.35
-		reserveLowerLimit = 300; // 300 / 1000 = 0.3
+		reserveUpperLimit = 850; // 350 / 1000 = 0.35
+		reserveLowerLimit = 900; // 300 / 1000 = 0.3
 	}
 
 	function trigger () auth external returns (bool) {
