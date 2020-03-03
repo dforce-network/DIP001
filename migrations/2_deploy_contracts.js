@@ -1,12 +1,13 @@
 const DSGuard = artifacts.require('DSGuard.sol');
 
-const Dispatcher = artifacts.require('Dispatcher.sol');
+const DFDispatcher = artifacts.require('DFDispatcher.sol');
 const DispatcherEntrance = artifacts.require('DispatcherEntrance.sol');
 
 const CompoundHandler = artifacts.require('CompoundHandler.sol');
 const lendFMeHandler = artifacts.require('lendFMeHandler.sol');
 
 //Rinkeby
+var DFView = '0x6fee0220fa27c86b65b800819cb258cd4a8ae7b7';
 var DFPool = '0xccf31dc9dcb6cb788d3c6b64f73efedfb7e9f20b';
 
 var tokens = {
@@ -65,10 +66,10 @@ module.exports = async function (deployer, network, accounts) {
             propotionList = [700, 300];
         }
             
-        contractDispatcher = await deployer.deploy(Dispatcher, tokens[key], DFPool, targetList, propotionList, decimals[key]);
-        result[tokens[key]].Dispatcher = Dispatcher.address;
+        contractDispatcher = await deployer.deploy(DFDispatcher, DFView, tokens[key], DFPool, targetList, propotionList, decimals[key]);
+        result[tokens[key]].Dispatcher = DFDispatcher.address;
 
-        await contractLendFMeHandler.setDispatcher.sendTransaction(Dispatcher.address).then(result => {
+        await contractLendFMeHandler.setDispatcher.sendTransaction(DFDispatcher.address).then(result => {
             print("contractLendFMeHandler.setDispatcher");
             printTx(result.tx);
         }).catch(error => {
@@ -84,7 +85,7 @@ module.exports = async function (deployer, network, accounts) {
             console.log(error);
         })
 
-        await contractDSGuard.permitx.sendTransaction(Dispatcher.address, lendFMeHandler.address).then(result => {
+        await contractDSGuard.permitx.sendTransaction(DFDispatcher.address, lendFMeHandler.address).then(result => {
             print("contractDSGuard.permitx Dispatcher call LendFMeHandler");
             printTx(result.tx);
         }).catch(error => {
@@ -93,7 +94,7 @@ module.exports = async function (deployer, network, accounts) {
         })
 
         if (CompoundAddress.hasOwnProperty(key)) {
-            await contractCompoundHandler.setDispatcher.sendTransaction(Dispatcher.address).then(result => {
+            await contractCompoundHandler.setDispatcher.sendTransaction(DFDispatcher.address).then(result => {
                 print("contractCompoundHandler.setDispatcher");
                 printTx(result.tx);
             }).catch(error => {
@@ -109,7 +110,7 @@ module.exports = async function (deployer, network, accounts) {
                 console.log(error);
             })
 
-            await contractDSGuard.permitx.sendTransaction(Dispatcher.address, CompoundHandler.address).then(result => {
+            await contractDSGuard.permitx.sendTransaction(DFDispatcher.address, CompoundHandler.address).then(result => {
                 print("contractDSGuard.permitx Dispatcher call CompoundHandler");
                 printTx(result.tx);
             }).catch(error => {
@@ -126,7 +127,7 @@ module.exports = async function (deployer, network, accounts) {
             console.log(error);
         })
 
-        await contractDSGuard.permitx.sendTransaction(admin, Dispatcher.address).then(result => {
+        await contractDSGuard.permitx.sendTransaction(admin, DFDispatcher.address).then(result => {
             print("contractDSGuard.permitx admin call Dispatcher");
             printTx(result.tx);
         }).catch(error => {
@@ -134,7 +135,15 @@ module.exports = async function (deployer, network, accounts) {
             console.log(error);
         })
 
-        await contractDispatcherEntrance.registDispatcher.sendTransaction(DFPool, tokens[key], Dispatcher.address).then(result => {
+        await contractDispatcher.setProfitBeneficiary.sendTransaction(admin).then(result => {
+            print("contractDispatcher.setProfitBeneficiary");
+            printTx(result.tx);
+        }).catch(error => {
+            perror("contractDispatcher.setProfitBeneficiary");
+            console.log(error);
+        })
+
+        await contractDispatcherEntrance.registDispatcher.sendTransaction(DFPool, tokens[key], DFDispatcher.address).then(result => {
             print("contractDispatcherEntrance.registDispatcher Pool Token Dispatcher");
             printTx(result.tx);
         }).catch(error => {
