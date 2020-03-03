@@ -938,15 +938,20 @@ export default class App extends React.Component {
 
 
   update_ProfitBeneficiary = () => {
-    let address_USDC = address_map[this.state.net_type]['USDC'];
+    // let address_USDC = address_map[this.state.net_type]['USDC'];
+    var token_address;
+    if (this.state.cur_tab_num === 1) {
+      token_address = address_map[this.state.net_type]['USDC']; // USDC
+    } else if (this.state.cur_tab_num === 2) {
+      token_address = address_map[this.state.net_type]['PAX']; // PAX
+    } else if (this.state.cur_tab_num === 3) {
+      token_address = address_map[this.state.net_type]['TUSD']; // TUSD
+    }
 
     this.state.Dispatcher.methods.getProfitBeneficiary().call().then((res_address) => {
-      let USDC = new this.new_web3.eth.Contract(USDCABI, address_USDC);
-      this.setState({
-        USDC: USDC,
-        ProfitBeneficiary_address: res_address
-      })
-      USDC.methods.balanceOf(res_address).call().then((res_balance) => {
+      let Contranct = new this.new_web3.eth.Contract(USDCABI, token_address);
+
+      Contranct.methods.balanceOf(res_address).call().then((res_balance) => {
         if (res_balance) {
           this.setState({
             my_balance: res_balance
@@ -955,6 +960,22 @@ export default class App extends React.Component {
           })
         }
       });
+      if (this.state.cur_tab_num === 1) {
+        this.setState({
+          USDC: Contranct,
+          ProfitBeneficiary_address: res_address
+        })
+      } else if (this.state.cur_tab_num === 2) {
+        this.setState({
+          PAX: Contranct,
+          ProfitBeneficiary_address: res_address
+        })
+      } else if (this.state.cur_tab_num === 3) {
+        this.setState({
+          TUSD: Contranct,
+          ProfitBeneficiary_address: res_address
+        })
+      }
     })
   }
   get_Upper_Lower = () => {
@@ -1105,7 +1126,7 @@ export default class App extends React.Component {
   }
 
   update_all_timer = () => {
-    if (!this.state.Dispatcher) {
+    if (!this.state.Dispatcher || !this.state.net_type) {
       return;
     }
     // get data
