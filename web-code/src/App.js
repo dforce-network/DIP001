@@ -59,7 +59,7 @@ export default class App extends React.Component {
 
     this.address_USDC = '0x4DBCdF9B62e891a7cec5A2568C3F4FAF9E8Abe2b';
     this.address_USDxPool = '0xccf31dc9dcb6cb788d3c6b64f73efedfb7e9f20b';
-    this.address_DispatcherEntrance = '0xD673ec2f901ab2140E08F38ea5F428a3e482e672';
+    this.address_DispatcherEntrance = '0x807bF5021a5A3eBb056f0978f1762e03799683bA';
     this.address_Dispatcher = '';
 
     this.new_web3 = window.new_web3 = new Web3(Web3.givenProvider || null);
