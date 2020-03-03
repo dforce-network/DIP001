@@ -5,16 +5,19 @@
   "main": "index.js",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
-    "compile": "truffle compile -all"
+    "compile": "truffle compile -all",
+    "rinkeby": "truffle migrate --network rinkeby",
+    "Re-rinkeby": "truffle migrate --reset --network rinkeby"
   },
   "keywords": [],
   "author": "",
   "license": "ISC",
   "dependencies": {
     "scrypt": "^6.0.3",
-    "truffle": "^5.1.5"
+    "truffle": "^5.1.15",
+    "truffle-hdwallet-provider": "^1.0.17"
   },
   "devDependencies": {
-    "solidity-coverage": "^0.7.0"
+    "solidity-coverage": "^0.7.2"
   }
 }
