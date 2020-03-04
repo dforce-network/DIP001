@@ -114,8 +114,8 @@ contract('procedure without profit', function (accounts) {
 		await showResult("trigger")
 
 		// 5. set target ratio and trigger
-		tx = await dispatcher.setReserveUpperLimit(550)
 		tx = await dispatcher.setReserveLowerLimit(450)
+		tx = await dispatcher.setReserveUpperLimit(550)
 		tx = await dispatcher.trigger()
 		await showResult("set target ratio and trigger")
 
