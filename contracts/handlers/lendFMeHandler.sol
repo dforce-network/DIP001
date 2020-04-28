@@ -19,7 +19,8 @@ contract lendFMeHandler is ITargetHandler, DSAuth, DSMath {
 	address targetAddr;
 	address token;
 	address dispatcher;
-	uint256 principle;
+	uint256 public principle;
+	uint256 public drainedPrinciple;
 
 	constructor (address _targetAddr, address _token) public {
 		targetAddr = _targetAddr;
@@ -30,6 +31,10 @@ contract lendFMeHandler is ITargetHandler, DSAuth, DSMath {
 
 	function setDispatcher(address _dispatcher) external auth {
 		dispatcher = _dispatcher;
+	}
+
+	function setPrinciple(uint256 _principle) external auth {
+		principle = _principle;
 	}
 
 	// token deposit
@@ -62,19 +67,23 @@ contract lendFMeHandler is ITargetHandler, DSAuth, DSMath {
 	}
 
 	function drainFunds() external auth returns (uint256) {
-		uint256 amount = getBalance();
+		uint256 amount = IERC20(token).balanceOf(address(this));
 		if(amount > 0) {
-			ILendFMe(targetAddr).withdraw(address(token), uint256(-1));
-			if(principle > 0){
-				IERC20(token).transfer(IDispatcher(dispatcher).getFund(), principle);
-				principle = 0;
+			if(principle > drainedPrinciple) {
+				drainedPrinciple = add(drainedPrinciple, amount);
+				if(principle > drainedPrinciple) {
+					IERC20(token).transfer(IDispatcher(dispatcher).getFund(), amount);
+				} else {
+					uint256 _amount = sub(add(principle, amount), drainedPrinciple);
+					drainedPrinciple = principle;
+					IERC20(token).transfer(IDispatcher(dispatcher).getFund(), _amount);
+					IERC20(token).transfer(IDispatcher(dispatcher).getProfitBeneficiary(), sub(amount, _amount));
+				}
+			} else {
+				IERC20(token).transfer(IDispatcher(dispatcher).getProfitBeneficiary(), amount);
 			}
 		}
 
-		uint256 profit = IERC20(token).balanceOf(address(this));
-		if(profit > 0) {
-			IERC20(token).transfer(IDispatcher(dispatcher).getProfitBeneficiary(), profit);
-		}
 		return 0;
 	}
 
@@ -83,7 +92,11 @@ contract lendFMeHandler is ITargetHandler, DSAuth, DSMath {
 	}
 
 	function getPrinciple() public view returns (uint256) {
-		return principle;
+		if(principle > drainedPrinciple) {
+			return sub(principle, drainedPrinciple);
+		} else {
+			return 0;
+		}
 	}
 
 	function getProfit() public view returns (uint256) {
